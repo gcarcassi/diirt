@@ -24,6 +24,7 @@ public class VTableFunctionSet extends FormulaFunctionSet {
                 .addFormulaFunction(new ColumnFromVStringArrayFunction())
                 .addFormulaFunction(new TableOfFormulaFunction())
                 .addFormulaFunction(new RangeFormulaFunction())
+                .addFormulaFunction(new TimeRangeFormulaFunction())
                 .addFormulaFunction(new StepFormulaFunction())
                 .addFormulaFunction(new ColumnFromDataGeneratorFunction())
                 .addFormulaFunction(new NaturalJoinFunction())
