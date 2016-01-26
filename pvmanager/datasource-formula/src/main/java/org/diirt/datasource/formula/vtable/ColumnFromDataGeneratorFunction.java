@@ -7,18 +7,16 @@ package org.diirt.datasource.formula.vtable;
 import java.util.Arrays;
 import java.util.List;
 import org.diirt.datasource.formula.FormulaFunction;
-import org.diirt.vtype.VNumberArray;
 import org.diirt.vtype.VString;
-import org.diirt.vtype.VTable;
 import org.diirt.vtype.table.Column;
-import org.diirt.vtype.table.ListNumberProvider;
+import org.diirt.vtype.table.ColumnDataProvider;
 import org.diirt.vtype.table.VTableFactory;
 
 /**
  *
  * @author carcassi
  */
-class ColumnFromListNumberGeneratorFunction implements FormulaFunction {
+class ColumnFromDataGeneratorFunction implements FormulaFunction {
 
     @Override
     public boolean isPure() {
@@ -37,17 +35,17 @@ class ColumnFromListNumberGeneratorFunction implements FormulaFunction {
 
     @Override
     public String getDescription() {
-        return "Constructs column from a list number generator";
+        return "Constructs column from a data generator";
     }
 
     @Override
     public List<Class<?>> getArgumentTypes() {
-        return Arrays.<Class<?>>asList(VString.class, ListNumberProvider.class);
+        return Arrays.<Class<?>>asList(VString.class, ColumnDataProvider.class);
     }
 
     @Override
     public List<String> getArgumentNames() {
-        return Arrays.asList("columnName", "numberGenerator");
+        return Arrays.asList("columnName", "dataGenerator");
     }
 
     @Override
@@ -58,7 +56,7 @@ class ColumnFromListNumberGeneratorFunction implements FormulaFunction {
     @Override
     public Object calculate(final List<Object> args) {
         VString name = (VString) args.get(0);
-        ListNumberProvider data = (ListNumberProvider) args.get(1);
+        ColumnDataProvider data = (ColumnDataProvider) args.get(1);
         
         if (name == null || data == null) {
             return null;
