@@ -10,17 +10,19 @@ import org.diirt.util.array.ListNumber;
  *
  * @author carcassi
  */
-public abstract class ListNumberProvider {
+public abstract class ListNumberProvider extends ColumnDataProvider {
+    // TODO: since we added ColumnDataProvider to generate data of all types,
+    // this could probably be refactored better... Keeping it like this for
+    // backward compatibility
     
-    private final Class<?> type;
-
     public ListNumberProvider(Class<?> type) {
-        this.type = type;
+        super(type);
     }
-    
-    public Class<?> getType() {
-        return type;
+
+    @Override
+    public Object createColumnData(int size) {
+        return createListNumber(size);
     }
-    
+
     public abstract ListNumber createListNumber(int size);
 }

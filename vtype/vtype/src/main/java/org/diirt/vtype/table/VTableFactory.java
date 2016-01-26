@@ -19,6 +19,7 @@ import org.diirt.util.array.ArrayInt;
 import org.diirt.util.array.BufferInt;
 import org.diirt.util.array.ListDouble;
 import org.diirt.util.array.ListInt;
+import org.diirt.util.array.ListMath;
 import org.diirt.util.array.ListNumber;
 import org.diirt.util.array.ListNumbers;
 import org.diirt.util.time.Timestamp;
@@ -379,11 +380,11 @@ public class VTableFactory {
         };
     }
     
-    public static Column column(final String name, final ListNumberProvider dataProvider) {
+    public static Column column(final String name, final ColumnDataProvider dataProvider) {
         return new Column(name, dataProvider.getType(), true) {
             @Override
             public Object getData(int size) {
-                return dataProvider.createListNumber(size);
+                return dataProvider.createColumnData(size);
             }
         };
     } 
@@ -406,6 +407,47 @@ public class VTableFactory {
         @Override
         public ListNumber createListNumber(int size) {
             return ListNumbers.linearListFromRange(min, max, size);
+        }
+    };
+
+    /**
+     * Creates a list provider that spaces the value uniformly between the
+     * beginning and end timestamps.
+     * 
+     * @param begin initial timestamp
+     * @param end final timestamp
+     * @return the data provider
+     */
+    public static ColumnDataProvider timeRange(final Timestamp begin, final Timestamp end) {
+        return new TimeRange(begin, end);
+    }
+    
+    private static class TimeRange extends ColumnDataProvider {
+        
+        private final Timestamp min;
+        private final Timestamp max;
+
+        public TimeRange(Timestamp min, Timestamp max) {
+            super(Timestamp.class);
+            this.min = min;
+            this.max = max;
+        }
+
+        @Override
+        public Object createColumnData(int size) {
+            final ListNumber timestamps = ListMath.rescale(ListNumbers.linearListFromRange(min.getSec(), max.getSec(), size), 1000, 0);
+            return new AbstractList<Timestamp>() {
+                @Override
+                public Timestamp get(int index) {
+                    return Timestamp.of(timestamps.getLong(index) / 1000, (int) (timestamps.getLong(index) % 1000) * 1000000);
+                }
+
+                @Override
+                public int size() {
+                    return timestamps.size();
+                }
+               
+            };
         }
     };
     
