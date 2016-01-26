@@ -47,6 +47,15 @@ function drawSeriesChart() {
                             rows[row][col] = vtable.columnValues[col][row];
                         }
                         break;
+                    case "Timestamp":
+                        data.addColumn('datetime', vtable.columnNames[col]);
+                        for (var row=0; row < vtable.columnValues[col].length; row++) {
+                            if (!rows[row]) {
+                                rows[row] = [];
+                            }
+                            rows[row][col] = new Date(vtable.columnValues[col][row]);
+                        }
+                        break;
                     default:
                         break;
                 }
