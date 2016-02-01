@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var nodes = document.getElementsByClassName("wp-time-line-graph");
+    var nodes = document.getElementsByClassName("wp-time-area-graph");
     var len = nodes.length;
     var charts = {};
     var channels = {};
@@ -16,7 +16,7 @@ $(document).ready(function () {
         var id = nodes[i].getAttribute("id");
         if (id === null) {
             counter++;
-            id = "wp-time-line-" + counter;
+            id = "wp-time-area-" + counter;
             nodes[i].id = id;
         }
         var channelname = nodes[i].getAttribute("data-channel");
@@ -31,6 +31,12 @@ $(document).ready(function () {
             title : {
                 text : 'Waiting for data'
             },
+            
+            plotOptions: {
+                area: {
+                    stacking: 'normal'
+                }
+            }
         });
         charts[i] = $('#' + id).highcharts();
         
@@ -59,13 +65,14 @@ $(document).ready(function () {
                             name : seriesID,
                             id : seriesID,
                             data : data,
-                            type : 'line',
+                            type : 'area',
                             threshold : null,
                             tooltip : {
                                 valueDecimals : 2
                             }
-                        },true, false);
+                        },false, false);
                 }
+                charts[nNode].redraw();
             }
         };
         
