@@ -37,28 +37,35 @@ $(document).ready(function () {
         var processValue = function (channel, nNode) {
             var value = values[channel.getId()];
             
-            var seriesID = value.columnNames[1];
-            var data = [];
-            var nPoints = value.columnValues[1].length;
-            for (var i=0; i < nPoints; i++) {
-                data[i] = [value.columnValues[0][i], value.columnValues[1][i]];
-            }
+            var timestampColumn = 0;
             
-            var series = charts[nNode].get(seriesID);
-            if (series) {
-                series.setData(data, true, false, false);
-            } else {
-                charts[nNode].setTitle({text : null}, {}, true);
-                charts[nNode].addSeries({
-                        name : seriesID,
-                        id : seriesID,
-                        data : data,
-                        type : 'line',
-                        threshold : null,
-                        tooltip : {
-                            valueDecimals : 2
-                        }
-                    },true, false);
+            for (var valuesColumn = 0; valuesColumn < value.columnNames.length; valuesColumn++) {
+                if (valuesColumn === timestampColumn) {
+                    continue;
+                }
+                var seriesID = value.columnNames[valuesColumn];
+                var data = [];
+                var nPoints = value.columnValues[valuesColumn].length;
+                for (var i=0; i < nPoints; i++) {
+                    data[i] = [value.columnValues[timestampColumn][i], value.columnValues[valuesColumn][i]];
+                }
+
+                var series = charts[nNode].get(seriesID);
+                if (series) {
+                    series.setData(data, true, false, false);
+                } else {
+                    charts[nNode].setTitle({text : null}, {}, true);
+                    charts[nNode].addSeries({
+                            name : seriesID,
+                            id : seriesID,
+                            data : data,
+                            type : 'line',
+                            threshold : null,
+                            tooltip : {
+                                valueDecimals : 2
+                            }
+                        },true, false);
+                }
             }
         };
         
