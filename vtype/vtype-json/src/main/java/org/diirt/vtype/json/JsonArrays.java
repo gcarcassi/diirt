@@ -180,7 +180,11 @@ public class JsonArrays {
     public static List<Timestamp> toListTimestamp(JsonArray array) {
         List<Timestamp> timestamps = new ArrayList<>();
         for (int i = 0; i < array.size(); i++) {
-            timestamps.add(Timestamp.of(array.getJsonNumber(i).longValue() / 1000, (int) (array.getJsonNumber(i).longValue() % 1000) * 1000000));
+            if (array.isNull(i)) {
+                timestamps.add(null);
+            } else {
+                timestamps.add(Timestamp.of(array.getJsonNumber(i).longValue() / 1000, (int) (array.getJsonNumber(i).longValue() % 1000) * 1000000));
+            }
         }
         return timestamps;
     }
@@ -212,7 +216,11 @@ public class JsonArrays {
     public static JsonArrayBuilder fromListTimestamp(List<Timestamp> list) {
         JsonArrayBuilder b = Json.createArrayBuilder();
         for (Timestamp element : list) {
-            b.add(element.getSec() * 1000 + element.getNanoSec() / 1000000);
+            if (element == null) {
+                b.addNull();
+            } else {
+                b.add(element.getSec() * 1000 + element.getNanoSec() / 1000000);
+            }
         }
         return b;
     }

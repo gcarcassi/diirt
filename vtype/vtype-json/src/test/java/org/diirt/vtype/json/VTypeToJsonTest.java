@@ -194,11 +194,11 @@ public class VTypeToJsonTest {
             + "\"columnNames\":[\"Name\",\"Index\",\"Value\",\"Timestamp\"],"
             + "\"columnTypes\":[\"String\",\"int\",\"double\",\"Timestamp\"],"
             + "\"columnValues\":[[\"A\",\"B\",\"C\"],[1,2,3],[3.14,1.25,-0.1],[1234000,2345000,3456000]]}";
-    public VTable vTable3 = newVTable(Arrays.<Class<?>>asList(String.class, int.class, double.class, Timestamp.class), Arrays.asList("Name", "Index", "Value", "Timestamp"), Arrays.asList(Arrays.asList(null, "B", "C"), new ArrayInt(1,2,3), new ArrayDouble(Double.NaN, 1.25, -0.1), Arrays.asList(Timestamp.of(1234, 0), Timestamp.of(2345, 0), Timestamp.of(3456, 123000000))));
+    public VTable vTable3 = newVTable(Arrays.<Class<?>>asList(String.class, int.class, double.class, Timestamp.class), Arrays.asList("Name", "Index", "Value", "Timestamp"), Arrays.asList(Arrays.asList(null, "B", "C"), new ArrayInt(1,2,3), new ArrayDouble(Double.NaN, 1.25, -0.1), Arrays.asList(Timestamp.of(1234, 0), null, Timestamp.of(3456, 123000000))));
     public String vTable3Json = "{\"type\":{\"name\":\"VTable\",\"version\":1},"
             + "\"columnNames\":[\"Name\",\"Index\",\"Value\",\"Timestamp\"],"
             + "\"columnTypes\":[\"String\",\"int\",\"double\",\"Timestamp\"],"
-            + "\"columnValues\":[[\"\",\"B\",\"C\"],[1,2,3],[null,1.25,-0.1],[1234000,2345000,3456123]]}";
+            + "\"columnValues\":[[\"\",\"B\",\"C\"],[1,2,3],[null,1.25,-0.1],[1234000,null,3456123]]}";
     
     @Test
     public void serializeVDouble() {
