@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.diirt.util.array.ArrayDouble;
 import org.diirt.util.array.ListNumber;
+import org.diirt.util.time.Timestamp;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
@@ -111,6 +112,22 @@ public class CsvParserTest {
         assertThat((Object) result.getColumnTypes().get(2), equalTo((Object) String.class));
         assertThat(result.getColumnValues().get(0), equalTo((Object) Arrays.asList("Gabriele Carcassi", "Kunal Shroff", "Eric Berryman")));
         assertThat(result.getColumnValues().get(1), equalTo((Object) new ArrayDouble(201401281140.0, 201401281150.0, 201401281160.0)));
+        assertThat(result.getColumnValues().get(2), equalTo((Object) Arrays.asList("This is my message:\nI said \"Hi!\" to everybody",
+                "I am busy", "Shopping list:\n* potatoes\n* carrots")));
+    }
+
+    @Test
+    public void parseFileTable3aCSV() throws Exception {
+        CsvParserResult result = CsvParser.AUTOMATIC.parse(new InputStreamReader(getClass().getResource("table3a.csv").openStream()));
+        assertThat(result.getColumnNames().size(), equalTo(3));
+        assertThat(result.getColumnNames().get(0), equalTo("Author"));
+        assertThat(result.getColumnNames().get(1), equalTo("Time"));
+        assertThat(result.getColumnNames().get(2), equalTo("Message"));
+        assertThat((Object) result.getColumnTypes().get(0), equalTo((Object) String.class));
+        assertThat((Object) result.getColumnTypes().get(1), equalTo((Object) Timestamp.class));
+        assertThat((Object) result.getColumnTypes().get(2), equalTo((Object) String.class));
+        assertThat(result.getColumnValues().get(0), equalTo((Object) Arrays.asList("Gabriele Carcassi", "Kunal Shroff", "Eric Berryman")));
+        assertThat(result.getColumnValues().get(1), equalTo((Object) Arrays.asList(Timestamp.of(1390909200, 0), Timestamp.of(1390909800, 0), Timestamp.of(1390910400, 0))));
         assertThat(result.getColumnValues().get(2), equalTo((Object) Arrays.asList("This is my message:\nI said \"Hi!\" to everybody",
                 "I am busy", "Shopping list:\n* potatoes\n* carrots")));
     }

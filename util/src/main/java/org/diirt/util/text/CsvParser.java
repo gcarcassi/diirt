@@ -7,14 +7,17 @@ package org.diirt.util.text;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.time.Instant;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.diirt.util.array.ArrayDouble;
 import org.diirt.util.array.ListDouble;
 import static org.diirt.util.text.StringUtil.DOUBLE_REGEX_WITH_NAN;
+import org.diirt.util.time.Timestamp;
 
 /**
  * Utility class to parse CSV text. The parser is thread safe: it includes an
@@ -94,6 +97,7 @@ public class CsvParser {
         private Matcher mLineTokens;
         private final Matcher mQuote = pQuote.matcher("");
         private final Matcher mDouble = pDouble.matcher("");
+        private final Matcher mTimestamp = pTimestamp.matcher("");
         
         // Keep data on best matched separator
         private String bestSeparator;
@@ -103,6 +107,7 @@ public class CsvParser {
     
     private static final Pattern pQuote = Pattern.compile("\"\"");
     private static final Pattern pDouble = Pattern.compile(DOUBLE_REGEX_WITH_NAN);
+    private static final Pattern pTimestamp = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
     
     /**
      * Automatic parser: auto-detects whether the first line is a header or not
@@ -219,7 +224,7 @@ public class CsvParser {
             state.columnTokens = new ArrayList<>();
             for (int i = 0; i < state.nColumns; i++) {
                 state.columnNumberParsable.add(true);
-                state.columnTimestampParsable.add(false);
+                state.columnTimestampParsable.add(true);
                 state.columnTokens.add(new ArrayList<String>());
             }
             
@@ -265,6 +270,9 @@ public class CsvParser {
             if (state.columnNumberParsable.get(i)) {
                 columnValues.add(convertToListDouble(state.columnTokens.get(i)));
                 columnTypes.add(double.class);
+            } else if (state.columnTimestampParsable.get(i)) {
+                columnValues.add(convertToListTimestamp(state.columnTokens.get(i)));
+                columnTypes.add(Timestamp.class);
             } else {
                 columnValues.add(state.columnTokens.get(i));
                 columnTypes.add(String.class);
@@ -293,6 +301,21 @@ public class CsvParser {
             }
         }
         return new ArrayDouble(values);
+    }
+    
+    /**
+     * Given a list of tokens, convert them to a list of timestamps.
+     * 
+     * @param tokens the tokens to be converted
+     * @return the timestamp list
+     */
+    private List<Timestamp> convertToListTimestamp(List<String> tokens) {
+        List<Timestamp> result = new ArrayList<>(tokens.size());
+        for (String token : tokens) {
+            Instant instant = Instant.parse(token);
+            result.add(Timestamp.of(instant.getEpochSecond(), instant.getNano()));
+        }
+        return result;
     }
 
     /**
@@ -419,10 +442,14 @@ public class CsvParser {
                 if (!isTokenNumberParsable(state, token)) {
                     state.columnNumberParsable.set(nColumn, false);
                 }
+                if (!isTokenTimestampParsable(state, token)) {
+                    state.columnTimestampParsable.set(nColumn, false);
+                }
             } else {
                 // If quoted, always use string
                 token = state.mQuote.reset(state.mLineTokens.group(1)).replaceAll("\"");
                 state.columnNumberParsable.set(nColumn, false);
+                state.columnTimestampParsable.set(nColumn, false);
             }
             state.columnTokens.get(nColumn).add(token);
             nColumn++;
@@ -445,6 +472,20 @@ public class CsvParser {
             return true;
         }
         return state.mDouble.reset(token).matches();
+    }
+    
+    /**
+     * Check whether the token can be parsed to a timestamp.
+     * 
+     * @param state the state of the parser
+     * @param token the token
+     * @return true if token matches a timestamp
+     */
+    private boolean isTokenTimestampParsable(State state, String token) {
+        if (token.isEmpty()) {
+            return true;
+        }
+        return state.mTimestamp.reset(token).matches();
     }
     
     /**
