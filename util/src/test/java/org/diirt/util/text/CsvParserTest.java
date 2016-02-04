@@ -126,10 +126,10 @@ public class CsvParserTest {
         assertThat((Object) result.getColumnTypes().get(0), equalTo((Object) String.class));
         assertThat((Object) result.getColumnTypes().get(1), equalTo((Object) Timestamp.class));
         assertThat((Object) result.getColumnTypes().get(2), equalTo((Object) String.class));
-        assertThat(result.getColumnValues().get(0), equalTo((Object) Arrays.asList("Gabriele Carcassi", "Kunal Shroff", "Eric Berryman")));
-        assertThat(result.getColumnValues().get(1), equalTo((Object) Arrays.asList(Timestamp.of(1390909200, 0), Timestamp.of(1390909800, 0), Timestamp.of(1390910400, 0))));
+        assertThat(result.getColumnValues().get(0), equalTo((Object) Arrays.asList("Gabriele Carcassi", "Kunal Shroff", "Eric Berryman", "Nobody")));
+        assertThat(result.getColumnValues().get(1), equalTo((Object) Arrays.asList(Timestamp.of(1390909200, 0), Timestamp.of(1390909800, 0), Timestamp.of(1390910400, 0), null)));
         assertThat(result.getColumnValues().get(2), equalTo((Object) Arrays.asList("This is my message:\nI said \"Hi!\" to everybody",
-                "I am busy", "Shopping list:\n* potatoes\n* carrots")));
+                "I am busy", "Shopping list:\n* potatoes\n* carrots", "Nothing")));
     }
 
     @Test

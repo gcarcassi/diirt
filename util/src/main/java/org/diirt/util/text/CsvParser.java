@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Date;
@@ -312,8 +313,16 @@ public class CsvParser {
     private List<Timestamp> convertToListTimestamp(List<String> tokens) {
         List<Timestamp> result = new ArrayList<>(tokens.size());
         for (String token : tokens) {
-            Instant instant = Instant.parse(token);
-            result.add(Timestamp.of(instant.getEpochSecond(), instant.getNano()));
+            try {
+                if (token.isEmpty()) {
+                    result.add(null);
+                } else {
+                    Instant instant = Instant.parse(token);
+                    result.add(Timestamp.of(instant.getEpochSecond(), instant.getNano()));
+                }
+            } catch (DateTimeParseException e) {
+                throw new RuntimeException("Token " + token + " can't be parsed to a timestamp");
+            }
         }
         return result;
     }
