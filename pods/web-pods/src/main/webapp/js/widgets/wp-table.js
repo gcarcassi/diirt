@@ -53,7 +53,11 @@ function drawSeriesChart() {
                             if (!rows[row]) {
                                 rows[row] = [];
                             }
-                            rows[row][col] = new Date(vtable.columnValues[col][row]);
+                            if (vtable.columnValues[col][row]) {
+                                rows[row][col] = new Date(vtable.columnValues[col][row]);
+                            } else {
+                                rows[row][col] = null;
+                            }
                         }
                         break;
                     default:
