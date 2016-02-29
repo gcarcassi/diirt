@@ -75,7 +75,6 @@
                         <div class="panel-body">
                             <p>These simple examples just add the channel, using the data-channel property.</p>
                             <p>sim/table:</p> <div class="wp-table" data-channel="sim/table"></div>
-                            <p>=tableOf(column("timestamp", timeRange("2016/01/24 00:00:00.000","2016/01/25 00:00:00.000")), column("value", 'sim/noiseWaveform(-5.0, 5.0, 100)')):</p> <div class="wp-table" data-channel="=tableOf(column(&quot;timestamp&quot;, timeRange(&quot;2016/01/24 00:00:00.000&quot;,&quot;2016/01/25 00:00:00.000&quot;)), column(&quot;value&quot;, 'sim/noiseWaveform(-5.0, 5.0, 100)'))"></div>
                         </div>
                     </div>
                 </div>
@@ -96,6 +95,27 @@
                             <p>Using CSS style width and height to change size.</p>
                             <p>width: 300px; height: 150px:</p> <div class="wp-table" data-channel="sim/table" style="width: 300px; height: 150px"></div>
                             <p>width: 400px; height: 100px:</p> <div class="wp-table" data-channel="sim/table" style="width: 400px; height: 100px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Time series</div>
+                        <div class="panel-body">
+                            <p>Shows the values of a time series.</p>
+                            <p>=tableOf(column("timestamp", timeRange("2016/01/24 00:00:00.000","2016/01/25 00:00:00.000")), column("value", 'sim/noiseWaveform(-5.0, 5.0, 100)')):</p> <div class="wp-table" data-channel="=tableOf(column(&quot;timestamp&quot;, timeRange(&quot;2016/01/24 00:00:00.000&quot;,&quot;2016/01/25 00:00:00.000&quot;)), column(&quot;value&quot;, 'sim/noiseWaveform(-5.0, 5.0, 100)'))"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Selection</div>
+                        <div class="panel-body">
+                            <p>The first table publishes the selection in a channel which is displayed by the second.</p>
+                            <p>Error messages:</p> <div class="wp-table" data-channel="sim/table(1000000)" data-selection-channel="loc/tableSelection"></div>
+                            <p>Selection:</p> <div class="wp-table" data-channel='loc/tableSelection'></div>
                         </div>
                     </div>
                 </div>

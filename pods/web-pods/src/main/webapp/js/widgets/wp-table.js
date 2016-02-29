@@ -5,20 +5,29 @@ function drawSeriesChart() {
     var nodes = document.getElementsByClassName("wp-table");
     var len = nodes.length;
     var counter = 0;
-    var tables = {};
+    // WebPODS table nodes, indexed by id
+    var wpTables = {};
+    // Google table components, indexed by id
+    var gTables = {};
+    // Current value
+    var values = {};
+    // Current google data value
+    var gDataTables = {};
 
     for (var i = 0; i < len; i++) {
         // Extract the node and all its properties
         var node = nodes[i];
-        var id = nodes[i].getAttribute("id");
-        if (id === null) {
+        var tableId = nodes[i].getAttribute("id");
+        if (tableId === null) {
             counter++;
-            id = "table-" + counter;
-            nodes[i].id = id;
+            tableId = "table-" + counter;
+            nodes[i].id = tableId;
         }
+        wpTables[tableId] = node;
         var dataChannel = nodes[i].getAttribute("data-channel");
+        var selectionChannel = nodes[i].getAttribute("data-selection-channel");
         
-        
+        // Converts a vTable to a google DataTable
         var convertVTableToDataTable = function(vtable) {
             var data = new google.visualization.DataTable();
             var rows = [];
@@ -68,35 +77,39 @@ function drawSeriesChart() {
             return data;
         };
         
-        var processValue = function (id, value) {
+        // Takes the new value and updates the table
+        var processValue = function (tableId, value) {
             var dataTable = convertVTableToDataTable(value);
             var parameters = new Object();
-            if (tables[id].getSortInfo()) {
-                parameters.sortColumn = tables[id].getSortInfo().column;
-                parameters.sortAscending = tables[id].getSortInfo().ascending;
+            if (gTables[tableId].getSortInfo()) {
+                parameters.sortColumn = gTables[tableId].getSortInfo().column;
+                parameters.sortAscending = gTables[tableId].getSortInfo().ascending;
             }
             parameters.height = "inherit";
             parameters.width = "inherit";
-            tables[id].draw(dataTable, parameters);
+            gTables[tableId].draw(dataTable, parameters);
+            values[tableId] = value;
+            gDataTables[tableId] = dataTable;
         };
         
-        var addError = function (message, channel, node) {
-            console.log("table " + tables[channel.getId()]);
-            google.visualization.errors.addError(node,
+        // Displays a message for the table with tableId
+        var addError = function (message, tableId) {
+            console.log("table " + gTables[tableId]);
+            google.visualization.errors.addError(wpTables[tableId],
                 message, "", {'removable': true});
         };
         
-        var createCallback = function (nNode) {
+        var createCallback = function (tableId) {
 
             return function (evt, channel) {
                 switch (evt.type) {
                     case "connection": //connection state changed
                         break;
                     case "value": //value changed
-                        processValue(channel.getId(), evt.value);
+                        processValue(tableId, evt.value);
                         break;
                     case "error": //error happened
-                        addError(evt.error, channel, nNode);
+                        addError(evt.error, tableId);
                         break;
                     case "writePermission":	// write permission changed.
                         break;
@@ -109,23 +122,47 @@ function drawSeriesChart() {
         
         };
         
-        var channel = wp.subscribeChannel(dataChannel, createCallback(node), true);
+        var channel = wp.subscribeChannel(dataChannel, createCallback(tableId), true);
 
-        var data = google.visualization.arrayToDataTable([
-            ['', '', ''],
-            ['', '', '']
-        ]);
+//        var data = google.visualization.arrayToDataTable([
+//            ['', '', ''],
+//            ['', '', '']
+//        ]);
+//
+//        var options = {
+//            title: 'Waiting for data',
+//            hAxis: {title: ''},
+//            vAxis: {title: ''},
+//            bubble: {textStyle: {fontSize: 11}}
+//        };
+        
+        var createTableSelectionCallback = function (tableId) {
 
-        var options = {
-            title: 'Waiting for data',
-            hAxis: {title: ''},
-            vAxis: {title: ''},
-            bubble: {textStyle: {fontSize: 11}}
+            return function (event) {
+                var selectionValue = new Object();
+                var currentValue = values[tableId];
+                selectionValue.type = currentValue.type;
+                selectionValue.columnNames = currentValue.columnNames;
+                var selectedIndex = gTables[tableId].getSelection()[0].row;
+                selectionValue.columnValues = [];
+                for (var nCol = 0; nCol < currentValue.columnValues.length; nCol++) {
+                    selectionValue.columnValues[nCol] = [ currentValue.columnValues[nCol][selectedIndex]];
+                }
+                //alert("Selection changed: " + Object.getOwnPropertyNames(event));
+//                alert("Selection changed: " + JSON.stringify(selectionValue));
+//                alert("Selection changed: " + gDataTables[tableId].getTableRowIndex(2));
+            };
+        
         };
         
         // Prepare html
         var table = new google.visualization.Table(node);
-        tables[channel.getId()] = table;
+        gTables[tableId] = table;
+        
+        if (selectionChannel) {
+            //var selectionChannel = wp.subscribeChannel(dataChannel, createCallback(node), true);
+            google.visualization.events.addListener(table, 'select', createTableSelectionCallback(tableId));
+        }
 
         //table.draw(data, options);
         
