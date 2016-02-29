@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=9">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <!-- The WebPods client, its depedency and its configuration -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script type="text/javascript" language="javascript" src="../js/webpods-client.js"></script>
+
+        <script>
+            // Calculating URL from document location, so that examples work no
+            // matter where they are deployed. Typical use would hard-code URL
+            var wsUri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + "/" + 
+                    document.location.pathname.split("/")[1] + "/socket";
+            var wp = new Client(wsUri);
+        </script>
+
+        <!-- The table widget -->
+        <script type="text/javascript" src="//www.google.com/jsapi"></script>
+        <script type="text/javascript" language="javascript" src="../js/widgets/wp-show-hide.js"></script>
+        
+        <!-- Bootstrap is used to make this page look decent. It's not needed by the widgets. -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+        <title>WebPODS - Table examples</title>
+    </head>
+    <body>
+        <!-- Nav bar -->
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">WebPODS</a>
+                </div>
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li><a href="..">Home</a></li>
+                        <li><a href=".">Examples</a></li>
+                        <li class="active"><a href="#">wp-show-hide</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Useful links <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="http://diirt.org">diirt.org</a></li>
+                                <li class="divider"></li>
+                                <li><a href="https://github.com/diirt/diirt/wiki/WebPODS-users">User documentation</a></li>
+                                <li><a href="https://github.com/diirt/diirt/wiki/WebPods">Developer documentation</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid" >
+            <h1>Show/Hide  widget (wp-show-hide)</h1>
+            <p>See the source of this page for examples on how to use the widget. For more details, see <a href="https://github.com/diirt/diirt/wiki/WebPODS-widgets">the WebPODS widgets reference documentation</a>.</p>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Show/Hide a paragraph</div>
+                        <div class="panel-body">
+                            <p>Flipflop hiding/showing a paragraph.</p>
+                            <p class="wp-show-hide" data-channel="sim/flipflop(2)">Paragraph shown</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Show/Hide a span</div>
+                        <div class="panel-body">
+                            <p>Flipflop hiding/showing a part of a paragraph.</p>
+                            <p>The text is <span class="wp-show-hide" data-channel="sim/flipflop(2)">not</span> hidden.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Show/Hide a div</div>
+                        <div class="panel-body">
+                            <p>Flipflop hiding/showing a div.</p>
+                            <div class="wp-show-hide" data-channel="sim/flipflop(2)" ><h3>Title</h3><p>Some text.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
