@@ -25,7 +25,7 @@ function drawSeriesChart() {
         }
         wpTables[tableId] = node;
         var dataChannel = nodes[i].getAttribute("data-channel");
-        var selectionChannel = nodes[i].getAttribute("data-selection-channel");
+        var selectionChannelName = nodes[i].getAttribute("data-selection-channel");
         
         // Converts a vTable to a google DataTable
         var convertVTableToDataTable = function(vtable) {
@@ -124,33 +124,20 @@ function drawSeriesChart() {
         
         var channel = wp.subscribeChannel(dataChannel, createCallback(tableId), true);
 
-//        var data = google.visualization.arrayToDataTable([
-//            ['', '', ''],
-//            ['', '', '']
-//        ]);
-//
-//        var options = {
-//            title: 'Waiting for data',
-//            hAxis: {title: ''},
-//            vAxis: {title: ''},
-//            bubble: {textStyle: {fontSize: 11}}
-//        };
-        
-        var createTableSelectionCallback = function (tableId) {
+        var createTableSelectionCallback = function (tableId, selectionChannel) {
 
             return function (event) {
                 var selectionValue = new Object();
                 var currentValue = values[tableId];
                 selectionValue.type = currentValue.type;
                 selectionValue.columnNames = currentValue.columnNames;
+                selectionValue.columnTypes = currentValue.columnTypes;
                 var selectedIndex = gTables[tableId].getSelection()[0].row;
                 selectionValue.columnValues = [];
                 for (var nCol = 0; nCol < currentValue.columnValues.length; nCol++) {
                     selectionValue.columnValues[nCol] = [ currentValue.columnValues[nCol][selectedIndex]];
                 }
-                //alert("Selection changed: " + Object.getOwnPropertyNames(event));
-//                alert("Selection changed: " + JSON.stringify(selectionValue));
-//                alert("Selection changed: " + gDataTables[tableId].getTableRowIndex(2));
+                selectionChannel.setValue(selectionValue);
             };
         
         };
@@ -159,12 +146,11 @@ function drawSeriesChart() {
         var table = new google.visualization.Table(node);
         gTables[tableId] = table;
         
-        if (selectionChannel) {
+        if (selectionChannelName) {
+            var selectionChannel = wp.subscribeChannel(selectionChannelName, function() {}, false);
             //var selectionChannel = wp.subscribeChannel(dataChannel, createCallback(node), true);
-            google.visualization.events.addListener(table, 'select', createTableSelectionCallback(tableId));
+            google.visualization.events.addListener(table, 'select', createTableSelectionCallback(tableId, selectionChannel));
         }
-
-        //table.draw(data, options);
         
     }
 }
