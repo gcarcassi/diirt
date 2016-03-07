@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jdbc version="1">
+    <!-- Setup the jdbc connection parameters to connect to the database -->
+    <!-- Multiple connections can be setup to different databases. Make sure
+         the appropriate JDBC driver is part of the path. -->
+    <connections>
+        <!-- Each connection should have a name to identify it and a jdbc url -->
+        <!--<connection name="mysql1" jdbcUrl="jdbc:mysql://localhost/test?user=root&amp;password=root"/>-->
+    </connections>
+    
+    <channels>
+        <!-- Multiple channelSet section can be added, each uses a single connection.
+             For each channel, specify a unique name, the query to get the data and a query
+             that is used to poll the data. The poll query should return only
+             one column with one numeric result. New data is loaded only if the result
+             of the poll query has incremented.
+        <channelSet connectionName="mysql1">
+            <channel name="test/table">
+                <query>SELECT * FROM Data</query>
+                <pollQuery>SELECT timestamp FROM Data ORDER BY timestamp DESC LIMIT 1</pollQuery>
+            </channel>
+        </channelSet>
+        -->
+    </channels>
+</jdbc>

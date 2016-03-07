@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jdbc version="1">
+    <connections>
+        <connection name="mysql1" jdbcUrl="jdbc:mysql://localhost/test?user=root&amp;password=root"/>
+    </connections>
+    
+    <channels>
+        <channelSet connectionName="mysql1">
+            <channel name="test/table">
+                <query>SELECT * FROM Data</query>
+                <pollQuery>SELECT timestamp FROM Data ORDER BY timestamp DESC LIMIT 1</pollQuery>
+            </channel>
+        </channelSet>
+    </channels>
+</jdbc>
