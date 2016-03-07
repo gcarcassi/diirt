@@ -36,5 +36,6 @@
         <module>datasource-loc</module>
         <module>datasource-sim</module>
         <module>datasource-sys</module>
-  </modules>
+        <module>datasource-jdbc</module>
+    </modules>
 </project>
