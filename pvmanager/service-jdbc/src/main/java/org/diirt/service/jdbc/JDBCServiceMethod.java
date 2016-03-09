@@ -95,7 +95,7 @@ class JDBCServiceMethod extends ServiceMethod {
                 }
                 if (isResultQuery()) {
                     ResultSet resultSet = preparedStatement.executeQuery();
-                    VTable table = resultSetToVTable(resultSet);
+                    VTable table = JDBCVTypeUtil.resultSetToVTable(resultSet);
                     return Collections.<String, Object>singletonMap(getResults().get(0).getName(), table);
                 } else {
                     preparedStatement.execute();
@@ -105,82 +105,6 @@ class JDBCServiceMethod extends ServiceMethod {
         } catch (Exception ex) {
             throw ex;
         }
-    }
-
-    /**
-     * Maps a result set to a VTable.
-     */
-    static VTable resultSetToVTable(ResultSet resultSet) throws SQLException {
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int nColumns = metaData.getColumnCount();
-        List<Class<?>> types = new ArrayList<>(nColumns);
-        List<Object> data = new ArrayList<>(nColumns);
-        List<String> names = new ArrayList<>(nColumns);
-        for (int j = 1; j <= nColumns; j++) {
-            names.add(metaData.getColumnName(j));
-            switch (metaData.getColumnType(j)) {
-                case Types.DOUBLE:
-                case Types.FLOAT:
-                    // XXX: NUMERIC should be BigInteger
-                case Types.NUMERIC:
-                    // XXX: Integers should be Long/Int
-                case Types.INTEGER:
-                case Types.TINYINT:
-                case Types.BIGINT:
-                case Types.SMALLINT:
-                    types.add(double.class);
-                    data.add(new CircularBufferDouble(Integer.MAX_VALUE));
-                    break;
-                    
-                case Types.LONGNVARCHAR:
-                case Types.CHAR:
-                case Types.VARCHAR:
-                    // XXX: should be a booloean
-                case Types.BOOLEAN:
-                case Types.BIT:
-                    types.add(String.class);
-                    data.add(new ArrayList<>());
-                    break;
-                    
-                case Types.TIMESTAMP:
-                    types.add(Timestamp.class);
-                    data.add(new ArrayList<>());
-                    break;
-                    
-                default:
-                    if ("java.lang.String".equals(metaData.getColumnClassName(j))) {
-                        types.add(String.class);
-                        data.add(new ArrayList<>());
-                    } else {
-                        throw new IllegalArgumentException("Unsupported type " + metaData.getColumnTypeName(j));
-                    }
-
-            }
-        }
-        
-        while (resultSet.next()) {
-            for (int i = 0; i < nColumns; i++) {
-                Class<?> type = types.get(i);
-                if (type.equals(String.class)) {
-                    @SuppressWarnings("unchecked")
-                    List<String> strings = (List<String>) data.get(i);
-                    strings.add(resultSet.getString(i+1));
-                } else if (type.equals(Timestamp.class)) {
-                    @SuppressWarnings("unchecked")
-                    List<Timestamp> timestamps = (List<Timestamp>) data.get(i);
-                    java.sql.Timestamp sqlTimestamp = resultSet.getTimestamp(i+1);
-                    if (sqlTimestamp == null) {
-                        timestamps.add(null);
-                    } else {
-                        timestamps.add(Timestamp.of(new Date(sqlTimestamp.getTime())));
-                    }
-                } else if (type.equals(double.class)) {
-                    ((CircularBufferDouble) data.get(i)).addDouble(resultSet.getDouble(i+1));
-                }
-            }
-        }
-        
-        return ValueFactory.newVTable(types, names, data);
     }
     
 }
