@@ -4,7 +4,7 @@
         <connection name="derby" jdbcUrl="jdbc:derby:memory:simpletest"/>
     </connections>
     
-    <channels>
+    <channels pollInterval="1">
         <channelSet connectionName="derby">
             <channel name="simple/full">
                 <query>SELECT * FROM data</query>

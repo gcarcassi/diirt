@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,9 +35,10 @@ public final class JDBCDataSource extends DataSource {
 	// Install type support for the types it generates.
 	DataTypeSupport.install();
     }
-    
-    private static final ExecutorService exec = Executors.newSingleThreadExecutor(namedPool("diirt jdbc worker "));
+
+    private static final AtomicInteger counter = new AtomicInteger();
     private static final Logger log = Logger.getLogger(JDBCDataSource.class.getName());
+    private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor(namedPool("diirt jdbc " + counter.getAndIncrement() + " worker "));
     private final JDBCDataSourceConfiguration configuration;
     private final Map<String, javax.sql.DataSource> jdbcSources = new ConcurrentHashMap<>();
 
@@ -46,19 +50,18 @@ public final class JDBCDataSource extends DataSource {
     JDBCDataSource(JDBCDataSourceConfiguration configuration) {
         super(false);
         this.configuration = configuration;
+        exec.scheduleWithFixedDelay(this::poll, configuration.pollInterval, configuration.pollInterval, TimeUnit.SECONDS);
     }
 
     @Override
     public void close() {
-        // TODO: close client
+        exec.shutdown();
         super.close();
     }
     
     private void poll() {
         for (ChannelHandler channel : getChannels().values()) {
-            if (channel.isConnected()) {
-                // Query
-            }
+            ((JDBCChannelHandler)channel).poll();
         }
     }
    

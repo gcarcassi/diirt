@@ -38,6 +38,7 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
     // Package private so we don't need getters
     Map<String, String> connections;
     Map<String, Channel> channels;
+    int pollInterval;
 
     public JDBCDataSourceConfiguration() {
     }
@@ -56,6 +57,9 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
             if (!ver.equals("1")) {
                 throw new IllegalArgumentException("Unsupported version " + ver);
             }
+            
+            String pollIntervalSetting = xPath.evaluate("/jdbc/channels/@pollInterval", document);
+            pollInterval = Integer.parseInt(pollIntervalSetting);
             
             Map<String, String> newConnections = new HashMap<>();
             NodeList xmlConnections = (NodeList) xPath.evaluate("/jdbc/connections/connection", document, XPathConstants.NODESET);

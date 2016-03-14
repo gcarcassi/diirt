@@ -98,7 +98,7 @@ public class JDBCDataSourceTest {
     // TODO: Add a test for the image
     
     @Test
-    public void readFile() throws Exception {
+    public void readFirstValue() throws Exception {
         CountDownPVReaderListener listener = new CountDownPVReaderListener(1, PVReaderEvent.VALUE_MASK);
         
         // Connect to channel
@@ -119,6 +119,43 @@ public class JDBCDataSourceTest {
         assertThat(vTable.getColumnName(2), equalTo("VALUE"));
         assertThat(vTable.getColumnData(1), equalTo((Object) Arrays.asList("A", "B")));
         assertThat(vTable.getColumnData(2), equalTo((Object) new ArrayDouble(3.15,4.51)));
+    }
+    
+    @Test
+    public void readUpdatedValue() throws Exception {
+        CountDownPVReaderListener listener = new CountDownPVReaderListener(1, PVReaderEvent.VALUE_MASK);
+        
+        // Connect to channel
+        pv = PVManager.read(vType("simple/full")).from(dataSource)
+                .readListener(listener)
+                .maxRate(ofMillis(10));
+        
+        // Wait for value
+        listener.await(ofMillis(1500));
+        assertThat(listener.getCount(), equalTo(0));
+        
+        // Check value
+        assertThat(pv.getValue(), instanceOf(VTable.class));
+        VTable vTable = (VTable) pv.getValue();
+        assertThat(vTable.getRowCount(), equalTo(2));
+        assertThat(vTable.getColumnCount(), equalTo(4));
+        
+        // Update table
+        Connection connection = db.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO data(name, value) values('C' , 5.55)")) {
+            stmt.execute();
+        }
+        
+        // Wait for value
+        listener.resetCount(1);
+        listener.await(ofMillis(3000));
+        assertThat(listener.getCount(), equalTo(0));
+
+        // Check new value
+        assertThat(pv.getValue(), instanceOf(VTable.class));
+        vTable = (VTable) pv.getValue();
+        assertThat(vTable.getRowCount(), equalTo(3));
+        assertThat(vTable.getColumnCount(), equalTo(4));
     }
     
 //    @Test

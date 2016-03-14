@@ -4,7 +4,7 @@
         <connection name="mysql1" jdbcUrl="jdbc:mysql://localhost/test?user=root&amp;password=root"/>
     </connections>
     
-    <channels>
+    <channels pollInterval="5">
         <channelSet connectionName="mysql1">
             <channel name="test/table">
                 <query>SELECT * FROM Data</query>

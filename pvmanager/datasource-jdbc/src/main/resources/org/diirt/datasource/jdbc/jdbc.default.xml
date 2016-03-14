@@ -8,7 +8,9 @@
         <!--<connection name="mysql1" jdbcUrl="jdbc:mysql://localhost/test?user=root&amp;password=root"/>-->
     </connections>
     
-    <channels>
+    <!-- The pollInterval determines the frequency the database should be polled
+         for new data. The interval is specified in seconds and must be an integer. -->
+    <channels pollInterval="60">
         <!-- Multiple channelSet section can be added, each uses a single connection.
              For each channel, specify a unique name, the query to get the data and a query
              that is used to poll the data. The poll query should return only
