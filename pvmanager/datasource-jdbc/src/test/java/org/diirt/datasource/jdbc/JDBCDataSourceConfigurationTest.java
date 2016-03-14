@@ -4,6 +4,11 @@
  */
 package org.diirt.datasource.jdbc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import org.diirt.service.jdbc.JDBCVTypeUtil;
+import org.diirt.vtype.VTable;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;

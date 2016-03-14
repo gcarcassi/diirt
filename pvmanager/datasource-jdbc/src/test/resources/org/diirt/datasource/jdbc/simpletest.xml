@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jdbc version="1">
+    <connections>
+        <connection name="derby" jdbcUrl="jdbc:derby:memory:simpletest"/>
+    </connections>
+    
+    <channels>
+        <channelSet connectionName="derby">
+            <channel name="simple/full">
+                <query>SELECT * FROM data</query>
+                <pollQuery>SELECT timestamp FROM Data ORDER BY timestamp DESC</pollQuery>
+            </channel>
+        </channelSet>
+    </channels>
+</jdbc>

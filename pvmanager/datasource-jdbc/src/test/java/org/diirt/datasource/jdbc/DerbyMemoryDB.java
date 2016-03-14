@@ -59,7 +59,6 @@ public class DerbyMemoryDB implements TestRule {
             private void createDB() {
                 try {
                     connection = DriverManager.getConnection(jdbcCreateUrl);
-                    System.out.println("DB created");
                 } catch (SQLException ex) {
                     throw new AssertionError("Couln't create derby DB", ex);
                 }
