@@ -7,7 +7,9 @@ package org.diirt.datasource.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +39,7 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
     
     // Package private so we don't need getters
     Map<String, String> connections;
-    Map<String, Channel> channels;
+    List<Channel> channels;
     int pollInterval;
 
     public JDBCDataSourceConfiguration() {
@@ -70,18 +72,18 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
                 newConnections.put(name, jdbcUrl);
             }
             
-            Map<String, Channel> newChannels = new HashMap<>();
+            List<Channel> newChannels = new ArrayList<>();
             NodeList xmlChannelSets = (NodeList) xPath.evaluate("/jdbc/channels/channelSet", document, XPathConstants.NODESET);
             for (int i = 0; i < xmlChannelSets.getLength(); i++) {
                 Node xmlChannelSet = xmlChannelSets.item(i);
                 String connectionName = xPath.evaluate("@connectionName", xmlChannelSet);
                 NodeList xmlChannels = (NodeList) xPath.evaluate("channel", xmlChannelSet, XPathConstants.NODESET);
                 for (int j = 0; j < xmlChannels.getLength(); j++) {
-                    Node xmlChannel = xmlChannels.item(i);
-                    String name =  xPath.evaluate("@name", xmlChannel);
+                    Node xmlChannel = xmlChannels.item(j);
+                    String channelPattern =  xPath.evaluate("@name", xmlChannel);
                     String query =  xPath.evaluate("query", xmlChannel);
                     String pollQuery =  xPath.evaluate("pollQuery", xmlChannel);
-                    newChannels.put(name, new Channel(connectionName, query, pollQuery));
+                    newChannels.add(new Channel(channelPattern, connectionName, query, pollQuery));
                 }
             }
             
@@ -95,11 +97,13 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
     }
     
     public class Channel {
+        final String channelPattern;
         final String connectionName;
         final String query;
         final String pollQuery;
 
-        public Channel(String connectionName, String query, String pollQuery) {
+        public Channel(String channelPattern, String connectionName, String query, String pollQuery) {
+            this.channelPattern = channelPattern;
             this.connectionName = connectionName;
             this.query = query;
             this.pollQuery = pollQuery;

@@ -10,6 +10,10 @@
                 <query>SELECT * FROM Data</query>
                 <pollQuery>SELECT timestamp FROM Data ORDER BY timestamp DESC LIMIT 1</pollQuery>
             </channel>
+            <channel name="test/query/A">
+                <query>SELECT * FROM Data WHERE name = ?</query>
+                <pollQuery>SELECT timestamp FROM Data WHERE name = ? ORDER BY timestamp DESC LIMIT 1</pollQuery>
+            </channel>
         </channelSet>
     </channels>
 </jdbc>

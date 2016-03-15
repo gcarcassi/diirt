@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.diirt.datasource.ChannelHandler;
 import org.diirt.datasource.DataSource;
@@ -67,11 +71,18 @@ public final class JDBCDataSource extends DataSource {
    
     @Override
     protected ChannelHandler createChannel(String channelName) {
-        JDBCDataSourceConfiguration.Channel channelConf = configuration.channels.get(channelName);
-        if (channelConf == null) {
-            throw new RuntimeException("Couldn't find database channel named " + channelName);
+        for (JDBCDataSourceConfiguration.Channel channel : configuration.channels) {
+            Pattern pattern = Pattern.compile(channel.channelPattern);
+            Matcher matcher = pattern.matcher(channelName);
+            if (matcher.matches()) {
+                List<Object> parameters = new ArrayList<>();
+                for (int i = 1; i <= matcher.groupCount(); i++) {
+                    parameters.add(matcher.group(i));
+                }
+                return new JDBCChannelHandler(this, channelName, channel, parameters);
+            }
         }
-	return new JDBCChannelHandler(this, channelName, channelConf);
+        throw new RuntimeException("Couldn't find database channel named " + channelName);
     }
 
     Connection getConnection(String connectionName) throws SQLException {

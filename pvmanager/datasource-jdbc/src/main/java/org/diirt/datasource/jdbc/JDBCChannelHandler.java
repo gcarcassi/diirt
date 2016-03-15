@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import org.diirt.datasource.ChannelWriteCallback;
 import org.diirt.datasource.MultiplexedChannelHandler;
@@ -26,11 +28,13 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     
     private final JDBCDataSource dataSource;
     private final JDBCDataSourceConfiguration.Channel channelConfiguration;
+    private final List<Object> parameters;
 
-    JDBCChannelHandler(JDBCDataSource dataSource, String channelName, JDBCDataSourceConfiguration.Channel channelConfiguration) {
+    JDBCChannelHandler(JDBCDataSource dataSource, String channelName, JDBCDataSourceConfiguration.Channel channelConfiguration, List<Object> parameters) {
         super(channelName);
         this.dataSource = dataSource;
         this.channelConfiguration = channelConfiguration;
+        this.parameters = Collections.unmodifiableList(parameters);
     }
     
     @Override
@@ -106,10 +110,16 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     
     private Object executePollQuery(Connection connection) throws SQLException {
         Object firstElement = null;
-        try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.pollQuery);
-                ResultSet result = stmt.executeQuery()) {
-            if (result.next()) {
-                firstElement = result.getObject(1);
+        try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.pollQuery)) {
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i <stmt.getParameterMetaData().getParameterCount()) {
+                    stmt.setObject(i+1, parameters.get(i));
+                }
+            }
+            try (ResultSet result = stmt.executeQuery()) {
+                if (result.next()) {
+                    firstElement = result.getObject(1);
+                }
             }
         }
         return firstElement;
@@ -117,9 +127,15 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     
     private VTable executeDataQuery(Connection connection) throws SQLException {
         VTable vTable;
-        try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.query);
-                ResultSet result = stmt.executeQuery()) {
-            vTable = JDBCVTypeUtil.resultSetToVTable(result);
+        try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.query)) {
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i <stmt.getParameterMetaData().getParameterCount()) {
+                    stmt.setObject(i+1, parameters.get(i));
+                }
+            }
+            try (ResultSet result = stmt.executeQuery()) {
+                vTable = JDBCVTypeUtil.resultSetToVTable(result);
+            }
         }
         return vTable;
     }

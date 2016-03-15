@@ -122,6 +122,30 @@ public class JDBCDataSourceTest {
     }
     
     @Test
+    public void readFirstValueWithParameters() throws Exception {
+        CountDownPVReaderListener listener = new CountDownPVReaderListener(1, PVReaderEvent.VALUE_MASK);
+        
+        // Connect to channel
+        pv = PVManager.read(vType("simple/partial/A")).from(dataSource)
+                .readListener(listener)
+                .maxRate(ofMillis(10));
+        
+        // Wait for value
+        listener.await(ofMillis(1500));
+        assertThat(listener.getCount(), equalTo(0));
+        
+        // Check value
+        assertThat(pv.getValue(), instanceOf(VTable.class));
+        VTable vTable = (VTable) pv.getValue();
+        assertThat(vTable.getRowCount(), equalTo(1));
+        assertThat(vTable.getColumnCount(), equalTo(4));
+        assertThat(vTable.getColumnName(1), equalTo("NAME"));
+        assertThat(vTable.getColumnName(2), equalTo("VALUE"));
+        assertThat(vTable.getColumnData(1), equalTo((Object) Arrays.asList("A")));
+        assertThat(vTable.getColumnData(2), equalTo((Object) new ArrayDouble(3.15)));
+    }
+    
+    @Test
     public void readUpdatedValue() throws Exception {
         CountDownPVReaderListener listener = new CountDownPVReaderListener(1, PVReaderEvent.VALUE_MASK);
         
