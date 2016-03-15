@@ -10,3 +10,4 @@ release.properties
 .classpath
 logs.txt
 *.failed.png
+/pvmanager/datasource-jdbc/derby.log
