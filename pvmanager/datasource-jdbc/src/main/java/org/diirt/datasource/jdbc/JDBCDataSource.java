@@ -4,23 +4,20 @@
  */
 package org.diirt.datasource.jdbc;
 
-import java.io.IOException;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.diirt.datasource.ChannelHandler;
 import org.diirt.datasource.DataSource;
@@ -45,6 +42,7 @@ public final class JDBCDataSource extends DataSource {
     private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor(namedPool("diirt jdbc " + counter.getAndIncrement() + " worker "));
     private final JDBCDataSourceConfiguration configuration;
     private final Map<String, javax.sql.DataSource> jdbcSources = new ConcurrentHashMap<>();
+    private final List<Pattern> precompiledPatterns;
 
     /**
      * Creates a new data source with the given configuration.
@@ -54,6 +52,7 @@ public final class JDBCDataSource extends DataSource {
     JDBCDataSource(JDBCDataSourceConfiguration configuration) {
         super(false);
         this.configuration = configuration;
+        precompiledPatterns = configuration.channels.stream().map(channel -> Pattern.compile(channel.channelPattern)).collect(Collectors.toList());
         exec.scheduleWithFixedDelay(this::poll, configuration.pollInterval, configuration.pollInterval, TimeUnit.SECONDS);
     }
 
@@ -71,15 +70,14 @@ public final class JDBCDataSource extends DataSource {
    
     @Override
     protected ChannelHandler createChannel(String channelName) {
-        for (JDBCDataSourceConfiguration.Channel channel : configuration.channels) {
-            Pattern pattern = Pattern.compile(channel.channelPattern);
-            Matcher matcher = pattern.matcher(channelName);
+        for (int nChannel = 0; nChannel < configuration.channels.size(); nChannel++) {
+            Matcher matcher = precompiledPatterns.get(nChannel).matcher(channelName);
             if (matcher.matches()) {
                 List<Object> parameters = new ArrayList<>();
-                for (int i = 1; i <= matcher.groupCount(); i++) {
-                    parameters.add(matcher.group(i));
+                for (int nParameter = 1; nParameter <= matcher.groupCount(); nParameter++) {
+                    parameters.add(matcher.group(nParameter));
                 }
-                return new JDBCChannelHandler(this, channelName, channel, parameters);
+                return new JDBCChannelHandler(this, channelName, configuration.channels.get(nChannel), parameters);
             }
         }
         throw new RuntimeException("Couldn't find database channel named " + channelName);

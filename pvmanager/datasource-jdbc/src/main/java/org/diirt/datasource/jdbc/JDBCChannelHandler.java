@@ -9,13 +9,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.diirt.datasource.ChannelWriteCallback;
 import org.diirt.datasource.MultiplexedChannelHandler;
-import org.diirt.service.jdbc.JDBCServiceMethodDescription;
 import org.diirt.service.jdbc.JDBCVTypeUtil;
 import org.diirt.vtype.VTable;
 
@@ -74,7 +72,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     private volatile Object pollResult;
     
     void poll() {
-        // Skip poll if channel is no usege on the channel
+        // Skip poll if channel is no usage on the channel
         if (getUsageCounter() > 0) {
             boolean databaseConnected = false;
             boolean pollQuerySuccessful = false;
@@ -116,6 +114,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
                     stmt.setObject(i+1, parameters.get(i));
                 }
             }
+            stmt.setMaxRows(1);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     firstElement = result.getObject(1);

@@ -6,14 +6,12 @@ package org.diirt.datasource.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,8 +20,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.diirt.datasource.DataSourceConfiguration;
-import org.diirt.service.jdbc.JDBCServiceMethodDescription;
-import org.diirt.service.jdbc.SimpleDataSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -41,9 +37,6 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
     Map<String, String> connections;
     List<Channel> channels;
     int pollInterval;
-
-    public JDBCDataSourceConfiguration() {
-    }
 
     @Override
     public JDBCDataSourceConfiguration read(InputStream input) {
@@ -96,7 +89,7 @@ public final class JDBCDataSourceConfiguration extends DataSourceConfiguration<J
         return this;
     }
     
-    public class Channel {
+    class Channel {
         final String channelPattern;
         final String connectionName;
         final String query;
