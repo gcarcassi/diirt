@@ -39,7 +39,7 @@ public class JDBCVTypeUtil {
         List<Object> data = new ArrayList<>(nColumns);
         List<String> names = new ArrayList<>(nColumns);
         for (int j = 1; j <= nColumns; j++) {
-            names.add(metaData.getColumnName(j));
+            names.add(metaData.getColumnLabel(j));
             switch (metaData.getColumnType(j)) {
                 case Types.DOUBLE:
                 case Types.FLOAT:
