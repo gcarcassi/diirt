@@ -43,7 +43,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
 
     @Override
     public void disconnect() {
-        processConnection(null);
+        pollResult = null;
     }
 
     @Override
