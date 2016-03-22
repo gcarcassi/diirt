@@ -43,6 +43,7 @@ public class JDBCVTypeUtil {
             switch (metaData.getColumnType(j)) {
                 case Types.DOUBLE:
                 case Types.FLOAT:
+                case Types.REAL:
                     // XXX: NUMERIC should be BigInteger
                 case Types.NUMERIC:
                     // XXX: Integers should be Long/Int
@@ -75,7 +76,7 @@ public class JDBCVTypeUtil {
                         types.add(String.class);
                         data.add(new ArrayList<>());
                     } else {
-                        throw new IllegalArgumentException("Unsupported type " + metaData.getColumnTypeName(j));
+                        throw new IllegalArgumentException("Unsupported SQL type - Name: " + metaData.getColumnTypeName(j) + " Type: " + metaData.getColumnType(j));
                     }
 
             }
