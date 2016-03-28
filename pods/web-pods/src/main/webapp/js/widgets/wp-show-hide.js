@@ -57,6 +57,8 @@ $(document).ready(function () {
         if (channelName !== null && channelName.trim().length > 0) {
             var channel = wp.subscribeChannel(channelName, createChannelCallback(showHideId), true);
         }
+        
+        showHide(showHideId, null);
     }
 });
 
