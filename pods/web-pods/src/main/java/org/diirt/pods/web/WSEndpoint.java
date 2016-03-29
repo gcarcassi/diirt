@@ -85,8 +85,9 @@ public class WSEndpoint {
         DataSource defaultDataSource = PVManager.getDefaultDataSource();
         if (defaultDataSource instanceof CompositeDataSource) {
             CompositeDataSource composite = (CompositeDataSource) defaultDataSource;
-            composite.putDataSource("loc", new LocalDataSource());
-            return composite.createSessionDataSource();
+            CompositeDataSource session = composite.createSessionDataSource();
+            session.putDataSource("loc", new LocalDataSource());
+            return session;
         } else {
             return defaultDataSource;
         }
@@ -267,6 +268,8 @@ public class WSEndpoint {
             channel.close();
         }
         closed = true;
+        sessionDataSource.close();
+        sessionDataSource = null;
     }
     
     private volatile boolean closed = false;
