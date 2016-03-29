@@ -32,6 +32,8 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import org.diirt.datasource.CompositeDataSource;
+import org.diirt.datasource.DataSource;
 import org.diirt.pods.common.ChannelTranslation;
 import org.diirt.pods.common.ChannelTranslator;
 import org.diirt.util.config.Configuration;
@@ -44,6 +46,7 @@ import org.diirt.datasource.PVWriterEvent;
 import org.diirt.datasource.PVWriterListener;
 import static org.diirt.datasource.formula.ExpressionLanguage.*;
 import org.diirt.datasource.formula.FormulaAst;
+import org.diirt.datasource.loc.LocalDataSource;
 import org.diirt.pods.common.ChannelRequest;
 import org.diirt.pods.web.common.MessageDecodeException;
 import org.diirt.util.time.TimeDuration;
@@ -76,6 +79,18 @@ public class WSEndpoint {
     
     private String currentUser;
     private String remoteAddress;
+    private DataSource sessionDataSource;
+    
+    private static DataSource prepareSessionDataSource() {
+        DataSource defaultDataSource = PVManager.getDefaultDataSource();
+        if (defaultDataSource instanceof CompositeDataSource) {
+            CompositeDataSource composite = (CompositeDataSource) defaultDataSource;
+            composite.putDataSource("loc", new LocalDataSource());
+            return composite.createSessionDataSource();
+        } else {
+            return defaultDataSource;
+        }
+    }
 
     @OnMessage
     public void onMessage(Session session, Message message) {
@@ -162,6 +177,7 @@ public class WSEndpoint {
             reader = PVManager.read(ast.toExpression())
                     .readListener(new ReadOnlyListener(session, message))
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
+                    .from(sessionDataSource)
                     .maxRate(TimeDuration.ofMillis(maxRate));
         } else {
             ReadWriteListener readWriteListener = new ReadWriteListener(session, message);
@@ -169,6 +185,7 @@ public class WSEndpoint {
                     .readListener(readWriteListener)
                     .writeListener(readWriteListener)
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
+                    .from(sessionDataSource)
                     .asynchWriteAndMaxReadRate(TimeDuration.ofMillis(maxRate));
         }
         channels.put(message.getId(), reader);
@@ -238,6 +255,9 @@ public class WSEndpoint {
         } else {
             currentUser = null;
         }
+        
+        // Prepare session DataSource
+        sessionDataSource = prepareSessionDataSource();
     }
 
     @OnClose
