@@ -19,6 +19,12 @@ import java.util.logging.Logger;
 public class CompositeDataSource extends DataSource {
     
     private static final Logger log = Logger.getLogger(CompositeDataSource.class.getName());
+    
+    // XXX: quickest way to implement the idea of a session is to keep a handle
+    // to a global composite datasource, so that some parts can be overridden
+    // for each session (say the local variables) and other can be shared
+    // (say data and network/protocol channels).
+    private final CompositeDataSource globalDataSource;
 
     // Stores all data sources by name
     private final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
@@ -31,6 +37,17 @@ public class CompositeDataSource extends DataSource {
      */
     public CompositeDataSource() {
         super(true);
+        globalDataSource = null;
+    }
+
+    /**
+     * Creates a session on the globalDataSource.
+     * 
+     * @param globalDataSource the parent data source
+     */
+    private CompositeDataSource(CompositeDataSource globalDataSource) {
+        super(true);
+        this.globalDataSource = globalDataSource;
     }
 
     /**
@@ -128,12 +145,13 @@ public class CompositeDataSource extends DataSource {
         if (indexDelimiter == -1) {
             if (defaultDataSource == null)
                 throw new IllegalArgumentException("Channel " + channelName + " uses default data source but one was never set.");
-            if (!dataSourceProviders.containsKey(defaultDataSource))
+            if (!dataSourceProviders.containsKey(defaultDataSource) && (globalDataSource == null || !globalDataSource.dataSourceProviders.containsKey(defaultDataSource))) {
                 throw new IllegalArgumentException("Channel " + channelName + " uses default data source " + defaultDataSource + " which was not found.");
+            }
             return defaultDataSource;
         } else {
             String source = channelName.substring(0, indexDelimiter);
-            if (dataSourceProviders.containsKey(source))
+            if (dataSourceProviders.containsKey(source) || (globalDataSource != null && globalDataSource.dataSourceProviders.containsKey(source)))
                 return source;
             throw new IllegalArgumentException("Data source " + source + " for " + channelName + " was not configured.");
         }
@@ -189,7 +207,7 @@ public class CompositeDataSource extends DataSource {
         // Dispatch calls to all the data sources
         for (Map.Entry<String, ReadRecipe> entry : splitRecipe.entrySet()) {
             try {
-                dataSources.get(entry.getKey()).disconnectRead(entry.getValue());
+                retrieveDataSource(entry.getKey()).disconnectRead(entry.getValue());
             } catch(RuntimeException ex) {
                 // If a data source fails, still go and disconnect the others
                 readRecipe.getChannelReadRecipes().iterator().next().getReadSubscription().getExceptionWriteFunction().writeValue(ex);
@@ -227,6 +245,9 @@ public class CompositeDataSource extends DataSource {
         if (dataSource == null) {
             DataSourceProvider factory = dataSourceProviders.get(name);
             if (factory == null) {
+                if (globalDataSource != null) {
+                    return globalDataSource.retrieveDataSource(name);
+                }
                 throw new IllegalArgumentException("DataSource '" + name + conf.delimiter + "' was not configured.");
             } else {
                 dataSource = factory.createInstance();
@@ -257,7 +278,7 @@ public class CompositeDataSource extends DataSource {
         for (Map.Entry<String, WriteRecipe> en : splitRecipe.entrySet()) {
             String dataSource = en.getKey();
             WriteRecipe splitWriteRecipe = en.getValue();
-            dataSources.get(dataSource).disconnectWrite(splitWriteRecipe);
+            retrieveDataSource(dataSource).disconnectWrite(splitWriteRecipe);
         }
     }
     
@@ -266,7 +287,7 @@ public class CompositeDataSource extends DataSource {
     ChannelHandler channel(String channelName) {
         String name = nameOf(channelName);
         String dataSource = sourceOf(channelName);
-        return dataSources.get(dataSource).channel(name);
+        return retrieveDataSource(dataSource).channel(name);
     }
     
     @Override
@@ -287,6 +308,9 @@ public class CompositeDataSource extends DataSource {
     @Override
     public Map<String, ChannelHandler> getChannels() {
         Map<String, ChannelHandler> channels = new HashMap<String, ChannelHandler>();
+        if (globalDataSource != null) {
+            channels.putAll(globalDataSource.getChannels());
+        }
         for (Entry<String, DataSource> entry : dataSources.entrySet()) {
             String dataSourceName = entry.getKey();
             DataSource dataSource = entry.getValue();
@@ -298,6 +322,17 @@ public class CompositeDataSource extends DataSource {
         }
         
         return channels;
+    }
+    
+    /**
+     * Creates a new composite data source that can be overridden.
+     * 
+     * @return a new composite datasource
+     */
+    public CompositeDataSource createSessionDataSource() {
+        CompositeDataSource session = new CompositeDataSource(this);
+        session.setConfiguration(conf);
+        return session;
     }
 
 }
