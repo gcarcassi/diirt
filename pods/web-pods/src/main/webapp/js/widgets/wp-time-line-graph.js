@@ -1,44 +1,53 @@
 function WpTimeLineGraph(node) {
     var self = this;
     var root;
-    var channelName = "what?";
+    var channelName;
+    var clearChannelName;
     var chart;
     var id;
     var timestampColumn = 0;
     var channel;
+    var clearChannel;
     
     this.setValue = function(value) {
-        for (var valuesColumn = 0; valuesColumn < value.columnNames.length; valuesColumn++) {
-            if (valuesColumn === timestampColumn) {
-                continue;
-            }
-            var seriesID = value.columnNames[valuesColumn];
-            var data = [];
-            var nPoints = value.columnValues[valuesColumn].length;
-            for (var i=0; i < nPoints; i++) {
-                data[i] = [value.columnValues[timestampColumn][i], value.columnValues[valuesColumn][i]];
-            }
+        if (value) {
+            for (var valuesColumn = 0; valuesColumn < value.columnNames.length; valuesColumn++) {
+                if (valuesColumn === timestampColumn) {
+                    continue;
+                }
+                var seriesID = value.columnNames[valuesColumn];
+                var data = [];
+                var nPoints = value.columnValues[valuesColumn].length;
+                for (var i=0; i < nPoints; i++) {
+                    data[i] = [value.columnValues[timestampColumn][i], value.columnValues[valuesColumn][i]];
+                }
 
-            var series = chart.get(seriesID);
-            if (series) {
-                series.setData(data, true, false, false);
-            } else {
-                chart.setTitle({text : null}, {}, true);
-                chart.addSeries({
-                        name : seriesID,
-                        id : seriesID,
-                        data : data,
-                        type : 'line',
-                        threshold : null,
-                        tooltip : {
-                            valueDecimals : 2
-                        }
-                    },true, false);
+                var series = chart.get(seriesID);
+                if (series) {
+                    series.setData(data, true, false, false);
+                } else {
+                    chart.setTitle({text : null}, {}, true);
+                    chart.addSeries({
+                            name : seriesID,
+                            id : seriesID,
+                            data : data,
+                            type : 'line',
+                            threshold : null,
+                            tooltip : {
+                                valueDecimals : 2
+                            }
+                        },true, false);
+                }
             }
+        } else {
+            while(chart.series.length > 0) {
+                chart.series[0].remove(true);
+            }
+            initChart();
         }
     };
     
-    var callback = function (evt, channel) {
+    var channelCallback = function (evt, channel) {
         switch (evt.type) {
             case "connection": //connection state changed
                 break;
@@ -55,6 +64,34 @@ function WpTimeLineGraph(node) {
                 break;
         }
     };
+    
+    var clearChannelCallback = function (evt, channel) {
+        switch (evt.type) {
+            case "connection": //connection state changed
+                break;
+            case "value": //value changed
+                self.setValue(null);
+                break;
+            case "error": //error happened
+                break;
+            case "writePermission":	// write permission changed.
+                break;
+            case "writeCompleted": // write finished.
+                break;
+            default:
+                break;
+        }
+    };
+    
+    var initChart = function() {
+        $('#' + id).highcharts('StockChart', {
+
+            title : {
+                text : 'Waiting for data'
+            }
+        });
+        chart = $('#' + id).highcharts();
+    }
 
     // Constructor
     root = node;
@@ -66,18 +103,18 @@ function WpTimeLineGraph(node) {
     WpTimeLineGraph.widgets[id] = this;
 
     channelName = root.getAttribute("data-channel");
+    clearChannelName = root.getAttribute("data-clear-channel");
 
     // Create the chart
-    $('#' + id).highcharts('StockChart', {
-
-        title : {
-            text : 'Waiting for data'
-        }
-    });
-    chart = $('#' + id).highcharts();
-
+    initChart();
+    
     // Subscribe to the channel
-    channel = wp.subscribeChannel(channelName, callback, true);
+    channel = wp.subscribeChannel(channelName, channelCallback, true);
+    
+    if (clearChannelName) {
+        // Subscribe to the clearchannel
+        clearChannel = wp.subscribeChannel(clearChannelName, clearChannelCallback, true);
+    }
 }
 
 // Keep a list of widgets
