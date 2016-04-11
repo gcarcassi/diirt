@@ -69,6 +69,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
         }
     }
     
+    private static final Object NO_POLL_DATA = new Object();
     private volatile Object pollResult;
     
     void poll() {
@@ -118,6 +119,8 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     firstElement = result.getObject(1);
+                } else {
+                    firstElement = NO_POLL_DATA;
                 }
             }
         }
