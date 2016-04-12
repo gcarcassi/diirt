@@ -74,7 +74,9 @@ function WpLed(node) {
         } else {
             ledOff();
         }
-        root.title = "";
+        
+        // Remove error tooltip
+        root.removeAttribute("title");
     };
     
     this.setError = function(message) {
@@ -107,7 +109,7 @@ function WpLed(node) {
     root = node;
     if (!root.id) {
         WpLed.counter++;
-        root.id = "wp-time-line-" + WpLed.counter;
+        root.id = "wp-led-" + WpLed.counter;
     }
     id = root.id;
     WpLed.widgets[id] = this;

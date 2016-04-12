@@ -24,13 +24,20 @@ function WpTextMonitor(node) {
             } else {
                 changeAlarm("NONE");
             }
-
-            // Remove error tooltip
-            input.removeAttribute("title");
         } else {
             input.value = "";
             changeAlarm("NONE");
         }
+        
+        // Remove error tooltip
+        input.removeAttribute("title");
+    };
+    
+    this.setError = function(message) {
+        // Change displayed alarm to invalid, and set the
+        // tooltip to the error message
+        changeAlarm("INVALID");
+        input.title = message;
     };
     
     function changeAlarm(severity) {
@@ -65,10 +72,7 @@ function WpTextMonitor(node) {
                 self.setValue(evt.value);
                 break;
             case "error": //error happened
-                // Change displayed alarm to invalid, and set the
-                // tooltip to the error message
-                changeAlarm("INVALID");
-                input.title = evt.error;
+                self.setError(evt.error);
                 break;
             case "writePermission":	// write permission changed.
                 break;
