@@ -91,7 +91,7 @@ function WpTimeLineGraph(node) {
             }
         });
         chart = $('#' + id).highcharts();
-    }
+    };
 
     // Constructor
     root = node;
@@ -109,11 +109,11 @@ function WpTimeLineGraph(node) {
     initChart();
     
     // Subscribe to the channel
-    channel = wp.subscribeChannel(channelName, channelCallback, true);
+    channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, true);
     
     if (clearChannelName) {
         // Subscribe to the clearchannel
-        clearChannel = wp.subscribeChannel(clearChannelName, clearChannelCallback, true);
+        clearChannel = WebPodsClient.client.subscribeChannel(clearChannelName, clearChannelCallback, true);
     }
 }
 
