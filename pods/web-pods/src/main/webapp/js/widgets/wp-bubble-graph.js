@@ -200,7 +200,7 @@ function drawSeriesChart() {
         
         };
         
-        var channel = wp.subscribeChannel(channelname, createCallback(i), readOnly);
+        var channel = WebPodsClient.client.subscribeChannel(channelname, createCallback(i), readOnly);
 
         var data = google.visualization.arrayToDataTable([
             ['ID', 'X', 'Y', 'Color', 'Size'],

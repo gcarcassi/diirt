@@ -50,7 +50,7 @@ function WpHtmlContent(node) {
     channelName = root.getAttribute("data-channel");
     
     // Subscribe to the channel
-    channel = wp.subscribeChannel(channelName, channelCallback, true);
+    channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, true);
 }
 
 // Keep a list of widgets
