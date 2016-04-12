@@ -1,23 +1,41 @@
-/*******************************************************************************
- * @author: eschuhmacher carcassi
- *
- * scripts to be included on the html file
- * <script type="text/javascript" language="javascript" src="../js/widgets/text-monitor.js"></script>
- * <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
- ******************************************************************************/
-
-$(document).ready(function () {
-
-    var nodes = document.getElementsByClassName("wp-text-monitor");
-    var len = nodes.length;
-    var inputs = {};
-    var currentAlarms = {};
-    counter = 0;
+function WpTextMonitor(node) {
+    var self = this;
+    var root;
+    var id;
+    var channelName;
+    var channel;
+    var input;
+    var currentAlarm;
     
-    function changeAlarm(severity, id, widget) {
-        var currentAlarm = currentAlarms[id];
+    this.setValue = function(value) {
+        if (value) {
+            // Display the new value
+            if ("value" in value) {
+                // If it's a scalar or array, display the value
+                input.value = value.value;
+            } else {
+                // If something else, display the type name
+                input.value = value.type.name;
+            }
+
+            // Change the style based on the alarm
+            if ("alarm" in value) {
+                changeAlarm(value.alarm.severity);
+            } else {
+                changeAlarm("NONE");
+            }
+
+            // Remove error tooltip
+            input.removeAttribute("title");
+        } else {
+            input.value = "";
+            changeAlarm("NONE");
+        }
+    };
+    
+    function changeAlarm(severity) {
         if (currentAlarm) {
-            widget.classList.remove(currentAlarm);
+            input.classList.remove(currentAlarm);
         }
         switch (severity) {
             case "MINOR":
@@ -36,80 +54,69 @@ $(document).ready(function () {
                 currentAlarm = "alarm-none";
                 break;
         }
-        currentAlarms[id] = currentAlarm;
-        widget.classList.add(currentAlarm);
+        input.classList.add(currentAlarm);
     }
-
-    for (var i = 0; i < len; i++) {
-        // Retrieve parameters from the HTML tag
-        var channelName = nodes[i].getAttribute("data-channel");
-        var id = nodes[i].getAttribute("id");
-        if (id === null) {
-            counter++;
-            id = "text-monitor-" + counter;
-            nodes[i].id = id;
+    
+    var channelCallback = function (evt, channel) {
+        switch (evt.type) {
+            case "connection": //connection state changed
+                break;
+            case "value": //value changed
+                self.setValue(evt.value);
+                break;
+            case "error": //error happened
+                // Change displayed alarm to invalid, and set the
+                // tooltip to the error message
+                changeAlarm("INVALID");
+                input.title = evt.error;
+                break;
+            case "writePermission":	// write permission changed.
+                break;
+            case "writeCompleted": // write finished.
+                break;
+            default:
+                break;
         }
-        
-        // Create the widget
-        // Should take all the space of the parent and use the same font/textAlignment
-        var input = document.createElement("input");
-        input.id = id;
-        input.disabled = true;
-        input.style.width = "100%";
-        input.style.height = "100%";
-        input.style.font = "inherit";
-        input.style.textAlign = "inherit";
-        var div = document.getElementById(id);
-        div.appendChild(input);
+    };
 
-        // If a channel is defined, connect
-        if (channelName !== null && channelName.trim().length > 0) {
-            var callback = function (evt, channel) {
-                switch (evt.type) {
-                    case "connection": //connection state changed
-                        break;
-                    case "value": //value changed
-                        var channelValue = channel.getValue();
-                        
-                        // Display the new value
-                        if ("value" in channelValue) {
-                            // If it's a scalar or array, display the value
-                            inputs[channel.getId()].value = channelValue.value;
-                        } else {
-                            // If something else, display the type name
-                            inputs[channel.getId()].value = channelValue.type.name;
-                        }
-                        
-                        // Change the style based on the alarm
-                        if ("alarm" in channelValue) {
-                            changeAlarm(channelValue.alarm.severity, channel.getId(), inputs[channel.getId()]);
-                        } else {
-                            changeAlarm("NONE", channel.getId(), inputs[channel.getId()]);
-                        }
-                        
-                        // Remove error tooltip
-                        inputs[channel.getId()].parentNode.removeAttribute("title");
-                        break;
-                    case "error": //error happened
-                        // Change displayed alarm to invalid, and set the
-                        // tooltip to the error message
-                        changeAlarm("INVALID", channel.getId(), inputs[channel.getId()]);
-                        inputs[channel.getId()].parentNode.title = evt.error;
-                        break;
-                    case "writeCompleted": // write finished.
-                        break;
-                    default:
-                        break;
-                }
-            };
-            var channel = wp.subscribeChannel(channelName, callback, true);
-            inputs[channel.getId()] = input;
-        }
+    // Constructor
+    root = node;
+    if (!root.id) {
+        WpTextMonitor.counter++;
+        root.id = "wp-time-line-" + WpTextMonitor.counter;
     }
+    id = root.id;
+    WpTextMonitor.widgets[id] = this;
 
+    channelName = root.getAttribute("data-channel");
+    
+    // Create the widget
+    // Should take all the space of the parent and use the same font/textAlignment
+    input = document.createElement("input");
+    input.id = id;
+    input.disabled = true;
+    input.style.width = "100%";
+    input.style.height = "100%";
+    input.style.font = "inherit";
+    input.style.textAlign = "inherit";
+    var div = document.getElementById(id);
+    div.appendChild(input);
+    
+    // Subscribe to the channel
+    channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, true);
+}
+
+// Keep a list of widgets
+WpTextMonitor.widgets = {};
+
+// Used to create unique ids
+WpTextMonitor.counter = 0;
+
+// Create widgets
+$(document).ready(function () {
+    var nodes = document.getElementsByClassName("wp-text-monitor");
+
+    for (var i = 0; i < nodes.length; i++) {
+        new WpTextMonitor(nodes[i]);
+    }
 });
-
-window.onbeforeunload = function () {
-    wp.close();
-};
-
