@@ -1,10 +1,12 @@
-$(document).ready(function () {
+function WpShowHide(node) {
+    var self = this;
+    var root;
+    var id;
+    var channelName;
+    var channel;
     
-    // WebPODS show/hide roots, indexed by id
-    var wpShowHides = {};
-    
-    function showHide(showHideId, value) {
-        var query = "#" + showHideId;
+    this.setValue = function(value) {
+        var query = "#" + id;
         if (value) {
             switch(value.type.name) {
                 case "VTable":
@@ -21,48 +23,54 @@ $(document).ready(function () {
         } else {
             $(query).hide();
         }
-    }
-        
-    var createChannelCallback = function (showHideId) {
-        return function (evt, channel) {
-            switch (evt.type) {
-                case "connection": //connection state changed
-                    break;
-                case "value": //value changed
-                    showHide(showHideId, evt.value);
-                    break;
-                case "error": //error happened
-                    break;
-                case "writePermission":	// write permission changed.
-                    break;
-                case "writeCompleted": // write finished.
-                    break;
-                default:
-                    break;
-            }
-        };
     };
     
+    var channelCallback = function (evt, channel) {
+        switch (evt.type) {
+            case "connection": //connection state changed
+                break;
+            case "value": //value changed
+                self.setValue(evt.value);
+                break;
+            case "error": //error happened
+                break;
+            case "writePermission": // write permission changed.
+                break;
+            case "writeCompleted": // write finished.
+                break;
+            default:
+                break;
+        }
+    };
+
+    // Constructor
+    root = node;
+    if (!root.id) {
+        WpShowHide.counter++;
+        root.id = "wp-show-hide-" + WpShowHide.counter;
+    }
+    id = root.id;
+    WpShowHide.widgets[id] = this;
+
+    channelName = root.getAttribute("data-channel");
+    
+    // Subscribe to the channel
+    channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, true);
+    
+    self.setValue(null);
+}
+
+// Keep a list of widgets
+WpShowHide.widgets = {};
+
+// Used to create unique ids
+WpShowHide.counter = 0;
+
+// Create widgets
+$(document).ready(function () {
     var nodes = document.getElementsByClassName("wp-show-hide");
-    var counter = 0;
+
     for (var i = 0; i < nodes.length; i++) {
-        var channelName = nodes[i].getAttribute("data-channel");
-        var showHideId = nodes[i].getAttribute("id");
-        if (showHideId === null) {
-            counter++;
-            showHideId = "show-hide-" + counter;
-            nodes[i].id = showHideId;
-        }
-        
-        if (channelName !== null && channelName.trim().length > 0) {
-            var channel = wp.subscribeChannel(channelName, createChannelCallback(showHideId), true);
-        }
-        
-        showHide(showHideId, null);
+        new WpShowHide(nodes[i]);
     }
 });
-
-window.onbeforeunload = function () {
-    wp.close();
-};
-
