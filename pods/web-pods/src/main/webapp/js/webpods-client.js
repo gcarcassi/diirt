@@ -540,3 +540,29 @@ function Client(url, debug, maxRate, username, password) {
         this.channelCallback(json, this);
     };
 }
+
+function WebPodsClient() {
+    
+}
+
+WebPodsClient.setLocation = function(locationFragment) {
+    var uri;
+    if (locationFragment) {
+        if (locationFragment.startsWith("//")) {
+            var uri = document.location.protocol.replace("http", "ws") + locationFragment;
+        } else {
+            var uri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + 
+                        locationFragment;
+        }
+    } else {
+        var uri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + "/" + 
+                    document.location.pathname.split("/")[1] + "/socket";
+    }
+    var client = new Client(uri);
+    wp = client;
+    WebPodsClient.client = client;
+    
+    window.onbeforeunload = function () {
+        client.close();
+    };
+};

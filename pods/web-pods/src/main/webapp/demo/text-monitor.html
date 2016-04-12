@@ -9,11 +9,8 @@
         <script type="text/javascript" language="javascript" src="../js/webpods-client.js"></script>
 
         <script>
-            // Calculating URL from document location, so that examples work no
-            // matter where they are deployed. Typical use would hard-code URL
-            var wsUri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + "/" + 
-                    document.location.pathname.split("/")[1] + "/socket";
-            var wp = new Client(wsUri);
+            // Set location to current web application
+            WebPodsClient.setLocation();
         </script>
 
         <!-- The text-monitor widget -->
