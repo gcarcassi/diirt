@@ -8,6 +8,7 @@ function WpTimeLineGraph(node) {
     var timestampColumn = 0;
     var channel;
     var clearChannel;
+    var lastClearValue;
     
     this.setValue = function(value) {
         if (value) {
@@ -70,7 +71,16 @@ function WpTimeLineGraph(node) {
             case "connection": //connection state changed
                 break;
             case "value": //value changed
-                self.setValue(null);
+                if ("value" in evt.value) {
+                    var newValue = evt.value.value;
+                    if (lastClearValue !== newValue) {
+                        lastClearValue = newValue;
+                        self.setValue(null);
+                    }
+                } else {
+                    lastClearValue = null;
+                    self.setValue(null);
+                }
                 break;
             case "error": //error happened
                 break;
@@ -91,6 +101,9 @@ function WpTimeLineGraph(node) {
             }
         });
         chart = $('#' + id).highcharts();
+        if (root.getAttribute("data-y-min")) {
+            chart.yAxis[0].setExtremes(root.getAttribute("data-y-min"), null, true);
+        }
     };
 
     // Constructor
