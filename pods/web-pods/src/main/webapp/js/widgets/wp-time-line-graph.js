@@ -136,6 +136,13 @@ WpTimeLineGraph.widgets = {};
 // Used to create unique ids
 WpTimeLineGraph.counter = 0;
 
+// Set Highcharts to use browser timezone
+Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
+
 // Create widgets
 $(document).ready(function () {
     var nodes = document.getElementsByClassName("wp-time-line-graph");
