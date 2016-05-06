@@ -33,6 +33,7 @@ public class VTableFunctionSet extends FormulaFunctionSet {
                 .addFormulaFunction(new TableRangeArrayFilterFunction())
                 .addFormulaFunction(new TableStringMatchFilterFunction())
                 .addFormulaFunction(new TableValueFilterFunction())
+                .addFormulaFunction(new ToUnixTimeFunction())
                 );
     }
 

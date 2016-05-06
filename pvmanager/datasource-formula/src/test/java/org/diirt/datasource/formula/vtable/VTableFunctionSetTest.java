@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.diirt.datasource.formula.FormulaFunctionSet;
 import org.diirt.datasource.formula.FunctionTester;
 import org.diirt.util.array.ArrayDouble;
+import org.diirt.util.time.Timestamp;
 import org.diirt.vtype.VNumberArray;
 import org.diirt.vtype.VString;
 import org.diirt.vtype.VStringArray;
@@ -76,6 +77,19 @@ public class VTableFunctionSetTest {
 
         FunctionTester.findBySignature(set, "column", VString.class, VStringArray.class)
                 .compareReturnValue(column, "A", array);
+    }
+    
+    @Test
+    public void toUnixTime1() {
+        long unixTime1 = 12345;
+        Timestamp time1 = Timestamp.of(unixTime1, 0);
+        long unixTime2 = 12345678;
+        Timestamp time2 = Timestamp.of(unixTime2, 123);
+
+        FunctionTester.findBySignature(set, "toUnixTime", Timestamp.class)
+                .compareReturnValue(null, (Object) null)
+                .compareReturnValue(unixTime1, time1)
+                .compareReturnValue(unixTime2, time2);
     }
     
     @Test
