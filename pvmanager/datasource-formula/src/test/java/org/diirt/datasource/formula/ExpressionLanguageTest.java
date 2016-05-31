@@ -9,6 +9,7 @@ import org.diirt.datasource.DataSource;
 import org.diirt.datasource.PVManager;
 import org.diirt.datasource.PVWriter;
 import org.diirt.datasource.ReadExpressionTester;
+import org.diirt.datasource.expression.ErrorDesiredRateExpression;
 import org.diirt.vtype.VDouble;
 import org.junit.Test;
 import static org.diirt.datasource.formula.ExpressionLanguage.*;

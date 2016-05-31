@@ -14,6 +14,7 @@ import org.diirt.datasource.expression.DesiredRateExpressionList;
 import org.diirt.datasource.expression.DesiredRateExpressionListImpl;
 import org.diirt.datasource.expression.DesiredRateReadWriteExpression;
 import org.diirt.datasource.expression.DesiredRateReadWriteExpressionImpl;
+import org.diirt.datasource.expression.ErrorDesiredRateExpression;
 import org.diirt.datasource.expression.Expressions;
 import org.diirt.datasource.expression.WriteExpression;
 import org.diirt.vtype.ValueUtil;
@@ -86,7 +87,7 @@ public class ExpressionLanguage {
         try {
             return FormulaAst.formula(formula).toExpression();
         } catch(RuntimeException ex) {
-            return errorDesiredRateExpression(ex);
+            return org.diirt.datasource.ExpressionLanguage.errorDesiredRateExpression(ex, "");
         }
     }
     
@@ -193,10 +194,6 @@ public class ExpressionLanguage {
     
     static <T> WriteExpression<T> readOnlyWriteExpression(String errorMessage) {
         return new ReadOnlyWriteExpression<>(errorMessage, "");
-    }
-    
-    static <T> DesiredRateExpression<T> errorDesiredRateExpression(RuntimeException error) {
-        return new ErrorDesiredRateExpression<>(error, "");
     }
     
     static <T> DesiredRateExpression<T> checkReturnType(final Class<T> clazz, final String argName, final DesiredRateExpression<?> arg1) {
