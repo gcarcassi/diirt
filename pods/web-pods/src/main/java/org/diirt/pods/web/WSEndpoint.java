@@ -44,10 +44,11 @@ import org.diirt.datasource.PVReaderListener;
 import org.diirt.datasource.PVWriter;
 import org.diirt.datasource.PVWriterEvent;
 import org.diirt.datasource.PVWriterListener;
-import static org.diirt.datasource.formula.ExpressionLanguage.*;
+import static org.diirt.pods.common.ExpressionLanguage.*;
 import org.diirt.datasource.formula.FormulaAst;
 import org.diirt.datasource.loc.LocalDataSource;
 import org.diirt.pods.common.ChannelRequest;
+import org.diirt.pods.common.UserInfo;
 import org.diirt.pods.web.common.MessageDecodeException;
 import org.diirt.util.time.TimeDuration;
 
@@ -127,62 +128,21 @@ public class WSEndpoint {
         if (message.getMaxRate() >= 20) {
             maxRate = message.getMaxRate();
         }
-
-        // First create the AST as seen by the client: authorization
-        // step is based on the namespace as seen by the client
-        FormulaAst clientAst;
-        try {
-            clientAst = FormulaAst.formula(message.getChannel());
-        } catch(RuntimeException ex) {
-            sendError(session, message.getId(), ex.getMessage());
-            return;
-        }
         
-        List<String> clientChannels = clientAst.listChannelNames();
-        Map<String, FormulaAst> substitutions = new HashMap<>();
-        boolean readOnly = message.isReadOnly();
-        for (String clientChannel : clientChannels) {
-            ChannelTranslation translation = channelTranslator.translate(new ChannelRequest(clientChannel, currentUser, null, null, remoteAddress));
-            
-            // No channel map, return an error
-            if (translation == null) {
-                sendError(session, message.getId(), "Channel " + clientChannel + " does not exist");
-                return;
-            }
-
-            // No access to the channel, return an error
-            if (translation.getPermission() == ChannelTranslation.Permission.NONE) {
-                sendError(session, message.getId(), "No access to channel " + clientChannel);
-                return;
-            }
-
-            if (!message.isReadOnly() && translation.getPermission() == ChannelTranslation.Permission.READ_ONLY) {
-                sendError(session, message.getId(), "No write access to channel " + clientChannel);
-                readOnly = true;
-            }
-            
-            try {
-                substitutions.put(clientChannel, FormulaAst.formula(translation.getFormula()));
-            } catch (RuntimeException ex) {
-                sendError(session, message.getId(), ex.getMessage());
-                return;
-            }
-        }
-        
-        connect(readOnly, clientAst.substituteChannels(substitutions), session, message, maxRate);
+        connect(message.isReadOnly(), message.getChannel(), session, message, maxRate);
     }
 
-    private void connect(boolean readOnly, FormulaAst ast, final Session session, final MessageSubscribe message, int maxRate) {
+    private void connect(boolean readOnly, String formula, final Session session, final MessageSubscribe message, int maxRate) {
         PVReader<?> reader;
         if (readOnly) {
-            reader = PVManager.read(ast.toExpression())
+            reader = PVManager.read(formula(formula, readOnly, channelTranslator, UserInfo.from(currentUser, remoteAddress)))
                     .readListener(new ReadOnlyListener(session, message))
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
                     .from(sessionDataSource)
                     .maxRate(TimeDuration.ofMillis(maxRate));
         } else {
             ReadWriteListener readWriteListener = new ReadWriteListener(session, message);
-            reader = PVManager.readAndWrite(formula(ast))
+            reader = PVManager.readAndWrite(formula(formula, readOnly, channelTranslator, UserInfo.from(currentUser, remoteAddress)))
                     .readListener(readWriteListener)
                     .writeListener(readWriteListener)
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
