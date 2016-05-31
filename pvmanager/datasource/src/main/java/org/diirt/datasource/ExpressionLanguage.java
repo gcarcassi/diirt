@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.diirt.datasource.expression.ErrorDesiredRateExpression;
 
 /**
  * Operators to constructs expression of PVs that the {@link PVManager} will
@@ -77,6 +78,22 @@ public class ExpressionLanguage {
         if (value != null)
             cache.writeValue(value);
         return new DesiredRateExpressionImpl<T>(new DesiredRateExpressionListImpl<T>(), cache, name);
+    }
+    
+    /**
+     * Creates an expression that returns an error.
+     * <p>
+     * This expression can be used to communicate an error that occurs during
+     * the preparation of the expression (e.g. null arguments, text fails parsing,
+     * ...) so that the expression creation does not throw an exception.
+     * 
+     * @param <T> the type of the expression
+     * @param error the error to be returned
+     * @param name the name of the expression
+     * @return a new expression
+     */
+    public static <T> DesiredRateExpression<T> errorDesiredRateExpression(RuntimeException error, String name) {
+        return new ErrorDesiredRateExpression<>(error, name);
     }
 
     /**
