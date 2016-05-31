@@ -32,6 +32,12 @@ public class PVWriterConfiguration<T> extends CommonConfiguration {
         return this;
     }
 
+    @Override
+    public PVWriterConfiguration<T> option(String name, Object value) {
+        super.option(name, value);
+        return this;
+    }
+
     /**
      * Sets a timeout for write operation.
      * <p>

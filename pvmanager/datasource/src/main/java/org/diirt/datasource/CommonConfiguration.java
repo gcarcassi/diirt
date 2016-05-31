@@ -4,6 +4,8 @@
  */
 package org.diirt.datasource;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import org.diirt.util.time.TimeDuration;
 
@@ -18,6 +20,7 @@ class CommonConfiguration {
     DataSource dataSource;
     TimeDuration timeout;
     String timeoutMessage;
+    Map<String, Object> options = new HashMap<>();
 
     /**
      * Defines which DataSource should be used to read the data.
@@ -58,6 +61,23 @@ class CommonConfiguration {
     public CommonConfiguration timeout(TimeDuration timeout, String timeoutMessage) {
         timeout(timeout);
         this.timeoutMessage = timeoutMessage;
+        return this;
+    }
+    
+    /**
+     * Adds a special option to the subscription.
+     * <p>
+     * This is a temporary way to add extra features, such as authorization
+     * and formula macros, without significant change in the architecture.
+     * 
+     * @param name name of the option
+     * @param value value of the option
+     * @return this
+     */
+    public CommonConfiguration option(String name, Object value) {
+        if (options.containsKey(name))
+            throw new IllegalStateException("Option " + name + " was already set");
+        options.put(name, value);
         return this;
     }
 

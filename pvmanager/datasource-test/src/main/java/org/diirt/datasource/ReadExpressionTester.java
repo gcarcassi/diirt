@@ -4,11 +4,7 @@
  */
 package org.diirt.datasource;
 
-import org.diirt.datasource.ValueCache;
-import org.diirt.datasource.PVDirector;
-import org.diirt.datasource.ReadFunction;
-import org.diirt.datasource.ReadRecipe;
-import org.diirt.datasource.ChannelReadRecipe;
+import java.util.HashMap;
 import org.diirt.datasource.expression.DesiredRateExpression;
 
 /**
@@ -19,7 +15,7 @@ public class ReadExpressionTester {
 
     private DesiredRateExpression<?> expression;
     private ReadRecipe readRecipe;
-    private PVDirector<?> pvReaderDirector = new PVDirector<Object>(null, null, null, null, null, null);
+    private PVDirector<?> pvReaderDirector = new PVDirector<Object>(null, null, null, null, null, null, new HashMap<String, Object>());
 
     public ReadExpressionTester(DesiredRateExpression<?> expression) {
         this.expression = expression;

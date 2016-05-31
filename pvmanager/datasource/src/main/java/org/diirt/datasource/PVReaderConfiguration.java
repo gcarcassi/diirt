@@ -32,6 +32,12 @@ public class PVReaderConfiguration<T> extends CommonConfiguration {
         return this;
     }
 
+    @Override
+    public PVReaderConfiguration<T> option(String name, Object value) {
+        super.option(name, value);
+        return this;
+    }
+
     /**
      * Sets a timeout for no values received.
      * <p>
@@ -138,7 +144,7 @@ public class PVReaderConfiguration<T> extends CommonConfiguration {
     
     static <T> PVDirector<T> prepareDirector(PVReaderConfiguration<T> readConfiguration) {
         PVDirector<T> director = new PVDirector<>(readConfiguration.pv, readConfiguration.aggregatedFunction, PVManager.getReadScannerExecutorService(),
-                readConfiguration.notificationExecutor, readConfiguration.dataSource, readConfiguration.exceptionHandler);
+                readConfiguration.notificationExecutor, readConfiguration.dataSource, readConfiguration.exceptionHandler, readConfiguration.options);
         if (readConfiguration.timeout != null) {
             if (readConfiguration.timeoutMessage == null)
                 readConfiguration.timeoutMessage = "Read timeout";

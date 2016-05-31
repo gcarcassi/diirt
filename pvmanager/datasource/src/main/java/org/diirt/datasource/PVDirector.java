@@ -5,6 +5,7 @@
 package org.diirt.datasource;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,8 @@ public class PVDirector<T> {
     private final Exception creationStackTrace = new Exception("PV was never closed (stack trace for creation)");
     /** Used to ignore duplicated errors */
     private final AtomicReference<Exception> previousCalculationException = new AtomicReference<>();
+    /** Optional configuration for the reader */
+    private final Map<String, Object> options;
     
     // Required to connect/disconnect expressions
     private final DataSource dataSource;
@@ -98,6 +101,10 @@ public class PVDirector<T> {
                 }
             }
         });
+    }
+
+    public Map<String, Object> getOptions() {
+        return options;
     }
     
     ReadRecipe getCurrentReadRecipe() {
@@ -219,7 +226,7 @@ public class PVDirector<T> {
      * @param notificationExecutor the thread switching mechanism
      */
     PVDirector(PVReaderImpl<T> pv, ReadFunction<T> function, ScheduledExecutorService scannerExecutor,
-            Executor notificationExecutor, DataSource dataSource, ExceptionHandler exceptionHandler) {
+            Executor notificationExecutor, DataSource dataSource, ExceptionHandler exceptionHandler, Map<String, Object> options) {
         this.pvReaderRef = new WeakReference<>(pv);
         this.readFunction = function;
         this.notificationExecutor = notificationExecutor;
@@ -230,6 +237,7 @@ public class PVDirector<T> {
         } else {
             readExceptionCollector = new LastExceptionCollector(1, exceptionHandler);
         }
+        this.options = Collections.unmodifiableMap(options);
     }
 
     /**

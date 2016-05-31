@@ -39,6 +39,13 @@ public class PVConfiguration<R, W> extends CommonConfiguration {
         return this;
     }
 
+    @Override
+    public PVConfiguration<R, W> option(String name, Object value) {
+        pvReaderConfiguration.option(name, value);
+        pvWriterConfiguration.option(name, value);
+        return this;
+    }
+
     /**
      * Sets a timeout for both reader and writer.
      *
