@@ -58,9 +58,9 @@ public class ExpressionLanguage {
         if (exp instanceof LastOfChannelExpression) {
             return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.vtype.ExpressionLanguage.vType(exp.getName()));
         } else if (exp instanceof ErrorDesiredRateExpression) {
-            return new DesiredRateReadWriteExpressionImpl<>(exp, readOnlyWriteExpression("Parsing error")); 
+            return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.ExpressionLanguage.readOnlyWriteExpression("Parsing error", exp.getName())); 
         } else {
-            return new DesiredRateReadWriteExpressionImpl<>(exp, readOnlyWriteExpression("Read-only formula"));
+            return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.ExpressionLanguage.readOnlyWriteExpression("Read-only formula", exp.getName()));
         }
     }
     
@@ -77,9 +77,9 @@ public class ExpressionLanguage {
         if (exp instanceof LastOfChannelExpression) {
             return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.vtype.ExpressionLanguage.vType(exp.getName()));
         } else if (exp instanceof ErrorDesiredRateExpression) {
-            return new DesiredRateReadWriteExpressionImpl<>(exp, readOnlyWriteExpression("Parsing error")); 
+            return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.ExpressionLanguage.readOnlyWriteExpression("Parsing error", exp.getName())); 
         } else {
-            return new DesiredRateReadWriteExpressionImpl<>(exp, readOnlyWriteExpression("Read-only formula"));
+            return new DesiredRateReadWriteExpressionImpl<>(exp, org.diirt.datasource.ExpressionLanguage.readOnlyWriteExpression("Read-only formula", exp.getName()));
         }
     }
     
@@ -190,10 +190,6 @@ public class ExpressionLanguage {
             argNames.add(arg.getName());
         }
         return new FormulaFunctionReadExpression(args, readFunction, FormulaFunctions.format(function, argNames));
-    }
-    
-    static <T> WriteExpression<T> readOnlyWriteExpression(String errorMessage) {
-        return new ReadOnlyWriteExpression<>(errorMessage, "");
     }
     
     static <T> DesiredRateExpression<T> checkReturnType(final Class<T> clazz, final String argName, final DesiredRateExpression<?> arg1) {

@@ -615,27 +615,4 @@ public class ExpressionLanguageTest {
     public void channelFromFormula6() {
         assertThat(ExpressionLanguage.channelFromFormula("2+3"), equalTo("2+3"));
     }
-    
-    @Test
-    public void readOnlyWriteExpression1() throws InterruptedException {
-        DataSource sim = new MockDataSource();
-        CountDownPVWriterListener<Object> listener = new CountDownPVWriterListener<Object>(1);
-        PVWriter<Object> pvWriter = PVManager.write(ExpressionLanguage.readOnlyWriteExpression("Error message"))
-                .from(sim)
-                .writeListener(listener)
-                .async();
-        try {
-            listener.await(TimeDuration.ofMillis(200));
-            Exception ex = pvWriter.lastWriteException();
-            assertThat(ex, instanceOf(RuntimeException.class));
-            assertThat(ex.getMessage(), equalTo("Error message"));
-            assertThat(pvWriter.isWriteConnected(), equalTo(false));
-            Thread.sleep(200);
-            assertThat(pvWriter.lastWriteException(), nullValue());
-            assertThat(pvWriter.isWriteConnected(), equalTo(false));
-        } finally {
-            pvWriter.close();
-            sim.close();
-        }
-    }
 }
