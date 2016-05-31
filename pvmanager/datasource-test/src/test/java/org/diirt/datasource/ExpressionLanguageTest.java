@@ -20,8 +20,15 @@ import org.diirt.datasource.expression.ReadMap;
 import org.diirt.datasource.expression.Queue;
 import org.diirt.datasource.expression.ReadWriteMap;
 import org.diirt.datasource.expression.WriteMap;
+import org.diirt.datasource.test.CountDownPVReaderListener;
+import org.diirt.datasource.test.MockDataSource;
+import org.diirt.util.time.TimeDuration;
+import static org.diirt.util.time.TimeDuration.ofMillis;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  *
@@ -162,5 +169,38 @@ public class ExpressionLanguageTest {
         assertThat(writeExp.readValue("SETPOINT"), equalTo((Object) 1.0));
         assertThat(writeExp.readValue("READBACK"), equalTo((Object) 3.0));
     }
+
+    @Before
+    public void setUp() {
+        pv = null;
+    }
+
+    @After
+    public void tearDown() {
+        if (pv != null) {
+            pv.close();
+            pv = null;
+        }
+    }
+
+    private PVReader<?> pv;
     
+    @Test
+    public void errorExpression() throws Exception {
+        CountDownPVReaderListener listener = new CountDownPVReaderListener(1);
+        pv = PVManager.read(errorDesiredRateExpression(new IllegalArgumentException("Variable out of range"), ""))
+                .readListener(listener)
+                .maxRate(ofMillis(10));
+
+        // Check we get the correct error
+        listener.await(TimeDuration.ofMillis(500));
+        assertThat(listener.getCount(), equalTo(0));
+        assertThat(listener.getEvent().isExceptionChanged(), equalTo(true));
+        assertThat(listener.getEvent().getPvReader().lastException().getMessage(), equalTo("Variable out of range"));
+        
+        // Check we don't get more notifications
+        listener.resetCount(1);
+        listener.await(TimeDuration.ofMillis(500));
+        assertThat(listener.getCount(), equalTo(1));        
+    }
 }
