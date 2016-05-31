@@ -10,4 +10,11 @@
     <name>org.diirt.pods.common</name>
     <description>Common functionality between all PODS.</description>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>datasource-formula</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
