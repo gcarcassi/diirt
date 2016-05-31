@@ -133,20 +133,25 @@ public class WSEndpoint {
     }
 
     private void connect(boolean readOnly, String formula, final Session session, final MessageSubscribe message, int maxRate) {
+        UserInfo userInfo = UserInfo.from(currentUser, remoteAddress);
         PVReader<?> reader;
         if (readOnly) {
-            reader = PVManager.read(formula(formula, readOnly, channelTranslator, UserInfo.from(currentUser, remoteAddress)))
+            reader = PVManager.read(formula(formula, readOnly, channelTranslator, userInfo))
                     .readListener(new ReadOnlyListener(session, message))
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
                     .from(sessionDataSource)
+                    .option("channelTranslator", channelTranslator)
+                    .option("userInfo", userInfo)
                     .maxRate(TimeDuration.ofMillis(maxRate));
         } else {
             ReadWriteListener readWriteListener = new ReadWriteListener(session, message);
-            reader = PVManager.readAndWrite(formula(formula, readOnly, channelTranslator, UserInfo.from(currentUser, remoteAddress)))
+            reader = PVManager.readAndWrite(formula(formula, readOnly, channelTranslator, userInfo))
                     .readListener(readWriteListener)
                     .writeListener(readWriteListener)
                     .timeout(TimeDuration.ofSeconds(1.0), "Still connecting...")
                     .from(sessionDataSource)
+                    .option("channelTranslator", channelTranslator)
+                    .option("userInfo", userInfo)
                     .asynchWriteAndMaxReadRate(TimeDuration.ofMillis(maxRate));
         }
         channels.put(message.getId(), reader);
