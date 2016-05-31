@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.diirt.datasource.expression.ErrorDesiredRateExpression;
+import org.diirt.datasource.expression.ReadOnlyWriteExpression;
+import org.diirt.datasource.expression.WriteExpression;
 
 /**
  * Operators to constructs expression of PVs that the {@link PVManager} will
@@ -94,6 +96,40 @@ public class ExpressionLanguage {
      */
     public static <T> DesiredRateExpression<T> errorDesiredRateExpression(RuntimeException error, String name) {
         return new ErrorDesiredRateExpression<>(error, name);
+    }
+    
+    /**
+     * Creates a write expression that returns an error at every write attempt.
+     * <p>
+     * This expression can be used to handle an error that occurs during
+     * the preparation of the expression (e.g. null arguments, text fails parsing,
+     * ...) so that the expression creation does not throw an exception.
+     * 
+     * @param <T> the type of the expression
+     * @param errorMessage the error message
+     * @param name the name of the expression
+     * @return a new expression
+     */
+    public static <T> WriteExpression<T> readOnlyWriteExpression(String errorMessage, String name) {
+        return new ReadOnlyWriteExpression<>(errorMessage, name);
+    }
+    
+    /**
+     * Creates an error expression.
+     * <p>
+     * This expression can be used to handle an error that occurs during
+     * the preparation of the expression (e.g. null arguments, text fails parsing,
+     * ...) so that the expression creation does not throw an exception.
+     * 
+     * @param <R> read payload
+     * @param <W> write payload
+     * @param error the read error
+     * @param writeMessage the write error message
+     * @param name the name of the expression
+     * @return a new expression
+     */
+    public static <R, W> DesiredRateReadWriteExpression<R, W> errorExpression(RuntimeException error, String writeMessage, String name) {
+        return new DesiredRateReadWriteExpressionImpl<>(errorDesiredRateExpression(error, name), readOnlyWriteExpression(writeMessage, name)); 
     }
 
     /**
