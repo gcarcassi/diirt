@@ -21,12 +21,15 @@ import org.diirt.datasource.expression.Queue;
 import org.diirt.datasource.expression.ReadWriteMap;
 import org.diirt.datasource.expression.WriteMap;
 import org.diirt.datasource.test.CountDownPVReaderListener;
+import org.diirt.datasource.test.CountDownPVWriterListener;
 import org.diirt.datasource.test.MockDataSource;
 import org.diirt.util.time.TimeDuration;
 import static org.diirt.util.time.TimeDuration.ofMillis;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import org.junit.After;
 import org.junit.Before;
 
@@ -169,38 +172,49 @@ public class ExpressionLanguageTest {
         assertThat(writeExp.readValue("SETPOINT"), equalTo((Object) 1.0));
         assertThat(writeExp.readValue("READBACK"), equalTo((Object) 3.0));
     }
-
-    @Before
-    public void setUp() {
-        pv = null;
-    }
-
-    @After
-    public void tearDown() {
-        if (pv != null) {
-            pv.close();
-            pv = null;
-        }
-    }
-
-    private PVReader<?> pv;
     
     @Test
     public void errorExpression() throws Exception {
         CountDownPVReaderListener listener = new CountDownPVReaderListener(1);
-        pv = PVManager.read(errorDesiredRateExpression(new IllegalArgumentException("Variable out of range"), ""))
+        PVReader<Object> pv = PVManager.read(errorDesiredRateExpression(new IllegalArgumentException("Variable out of range"), ""))
                 .readListener(listener)
                 .maxRate(ofMillis(10));
+        try {
+            // Check we get the correct error
+            listener.await(TimeDuration.ofMillis(500));
+            assertThat(listener.getCount(), equalTo(0));
+            assertThat(listener.getEvent().isExceptionChanged(), equalTo(true));
+            assertThat(listener.getEvent().getPvReader().lastException().getMessage(), equalTo("Variable out of range"));
 
-        // Check we get the correct error
-        listener.await(TimeDuration.ofMillis(500));
-        assertThat(listener.getCount(), equalTo(0));
-        assertThat(listener.getEvent().isExceptionChanged(), equalTo(true));
-        assertThat(listener.getEvent().getPvReader().lastException().getMessage(), equalTo("Variable out of range"));
-        
-        // Check we don't get more notifications
-        listener.resetCount(1);
-        listener.await(TimeDuration.ofMillis(500));
-        assertThat(listener.getCount(), equalTo(1));        
+            // Check we don't get more notifications
+            listener.resetCount(1);
+            listener.await(TimeDuration.ofMillis(500));
+            assertThat(listener.getCount(), equalTo(1));
+        } finally {
+            pv.close();
+        }
+    }
+    
+    @Test
+    public void readOnlyWriteExpression1() throws InterruptedException {
+        DataSource sim = new MockDataSource();
+        CountDownPVWriterListener<Object> listener = new CountDownPVWriterListener<Object>(1);
+        PVWriter<Object> pvWriter = PVManager.write(org.diirt.datasource.ExpressionLanguage.readOnlyWriteExpression("Error message", ""))
+                .from(sim)
+                .writeListener(listener)
+                .async();
+        try {
+            listener.await(TimeDuration.ofMillis(200));
+            Exception ex = pvWriter.lastWriteException();
+            assertThat(ex, instanceOf(RuntimeException.class));
+            assertThat(ex.getMessage(), equalTo("Error message"));
+            assertThat(pvWriter.isWriteConnected(), equalTo(false));
+            Thread.sleep(200);
+            assertThat(pvWriter.lastWriteException(), nullValue());
+            assertThat(pvWriter.isWriteConnected(), equalTo(false));
+        } finally {
+            pvWriter.close();
+            sim.close();
+        }
     }
 }
