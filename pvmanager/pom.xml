@@ -37,5 +37,6 @@
         <module>datasource-sim</module>
         <module>datasource-sys</module>
         <module>datasource-jdbc</module>
+        <module>datasource-formula-channel</module>
     </modules>
 </project>

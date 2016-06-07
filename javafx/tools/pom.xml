@@ -90,6 +90,11 @@
             <artifactId>service</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.diirt</groupId>
+            <artifactId>datasource-formula-channel</artifactId>
+            <version>3.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

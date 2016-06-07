@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.diirt</groupId>
+        <artifactId>pvmanager-all</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>datasource-formula-channel</artifactId>
+    <packaging>jar</packaging>
+    <name>org.diirt.datasource.formula.channel</name>
+    <description>Functions to dynamically open channels.</description>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>datasource-formula</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>datasource-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <!-- The serviceloader-maven-plugin will look for all the implementations of
+                 FormulaFunctionSet and properly register them using the ServiceLoader.
+                 This makes adding/refactoring functions and function set easy, as the
+                 new names will be automatically picked up. -->
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <version>${serviceloader.maven.plugin.version}</version>
+                <configuration>
+                    <services>
+                        <param>org.diirt.datasource.formula.FormulaFunctionSet</param>
+                    </services>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
