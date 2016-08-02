@@ -4,25 +4,31 @@
         <meta http-equiv="X-UA-Compatible" content="IE=9">
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-
+        <!-- The WebPods client, its depedency and its configuration -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
-        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+        <script type="text/javascript" language="javascript" src="../js/webpods-client.js"></script>
 
-        <!-- Latest compiled and minified CSS -->
+        <script>
+            // Set location to current web application
+            WebPodsClient.setLocation();
+        </script>
+
+        <!-- The table widget -->
+        <script type="text/javascript" src="//www.google.com/jsapi"></script>
+        <script type="text/javascript" language="javascript" src="../js/widgets/wp-combobox.js"></script>
+        <script type="text/javascript" language="javascript" src="../js/widgets/wp-text-monitor.js"></script>
+        
+        <!-- Bootstrap is used to make this page look decent. It's not needed by the widgets. -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-
-        <!-- Optional theme -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
-
-        <!-- Latest compiled and minified JavaScript -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-        <title>WebPODS - Examples</title>
+
+        <title>WebPODS - Table examples</title>
     </head>
     <body>
+        <!-- Nav bar -->
         <nav class="navbar navbar-default">
             <div class="container-fluid">
-                <!-- Brand and toggle get grouped for better mobile display -->
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                         <span class="sr-only">Toggle navigation</span>
@@ -33,11 +39,11 @@
                     <a class="navbar-brand" href="#">WebPODS</a>
                 </div>
 
-                <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
                         <li><a href="..">Home</a></li>
-                        <li class="active"><a href="#">Examples</a></li>
+                        <li><a href=".">Examples</a></li>
+                        <li class="active"><a href="#">wp-table</a></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">
@@ -50,33 +56,26 @@
                             </ul>
                         </li>
                     </ul>
-                </div><!-- /.navbar-collapse -->
+                </div>
             </div>
         </nav>
+        
         <div class="container-fluid" >
-            <h1>WebPODS widgets examples</h1>
-            <p>WebPODS comes with a few HTML widgets that can be customized through CSS.
-            You can learn how they work and how to use them by looking at the
-            following examples.</p>
+            <h1>Read-only combobox widget (wp-combobox)</h1>
+            <p>See the source of this page for examples on how to use the widget. For more details, see <a href="https://github.com/diirt/diirt/wiki/WebPODS-widgets">the WebPODS widgets reference documentation</a>.</p>
+            
             <div class="row">
                 <div class="col-md-4">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Widgets</div>
+                        <div class="panel-heading">Simple monitoring</div>
                         <div class="panel-body">
-                            <p><a href="text-monitor.html">Text monitor (wp-text-monitor)</a></p>
-                            <p><a href="combobox.html">Combobox (wp-text-combobox)</a></p>
-                            <p><a href="led.html">LED (wp-led)</a></p>
-                            <p><a href="table.html">Table (wp-table)</a></p>
-                            <p><a href="bubble-graph.html">Bubble graph (wp-bubble-graph)</a></p>
-                            <p><a href="show-hide.html">Show/Hide (wp-show-hide)</a></p>
-                            <p><a href="time-area-graph.html">Time area graph (wp-time-area-graph)</a></p>
-                            <p><a href="time-line-graph.html">Time series graph (wp-time-line-graph)</a></p>
-                            <p><a href="html-content.html">HTML text (wp-html-content)</a></p>
+                            <p>These simple examples just add the channel, using the data-channel property.</p>
+                            <p>Example list:</p> <span class="wp-combobox" data-channel='=arrayOf("a", "b")' data-selection-channel='loc/selection'></span>
+                            <p>Selection:</p> <div class="wp-text-monitor" data-channel="loc/selection"></div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
     </body>
