@@ -85,8 +85,6 @@ function WpCombobox(node) {
     select = document.createElement("select");
     select.id = id;
     select.disabled = true;
-    select.style.width = "100%";
-    select.style.height = "100%";
     select.style.font = "inherit";
     select.style.textAlign = "inherit";
     root.appendChild(select);
