@@ -70,6 +70,10 @@ public final class JDBCDataSource extends DataSource {
             ((JDBCChannelHandler)channel).poll();
         }
     }
+    
+    void schedulePoll(JDBCChannelHandler channel) {
+        exec.submit(channel::poll);
+    }
    
     @Override
     protected ChannelHandler createChannel(String channelName) {

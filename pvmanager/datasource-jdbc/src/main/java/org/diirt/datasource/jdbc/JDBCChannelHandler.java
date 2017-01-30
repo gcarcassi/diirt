@@ -42,7 +42,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     @Override
     public void connect() {
         // Poll right away
-        poll();
+        dataSource.schedulePoll(this);
     }
 
     @Override
