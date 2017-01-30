@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +36,8 @@ public final class JDBCDataSource extends DataSource {
     static {
 	// Install type support for the types it generates.
 	DataTypeSupport.install();
+        // XXX: enabling poll logging
+        Logger.getLogger(JDBCChannelHandler.class.getName()).setLevel(Level.ALL);
     }
 
     private static final AtomicInteger counter = new AtomicInteger();

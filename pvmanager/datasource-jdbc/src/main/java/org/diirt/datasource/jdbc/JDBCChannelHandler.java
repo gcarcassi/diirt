@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.diirt.datasource.ChannelWriteCallback;
 import org.diirt.datasource.MultiplexedChannelHandler;
 import org.diirt.service.jdbc.JDBCVTypeUtil;
@@ -23,6 +25,8 @@ import org.diirt.vtype.VTable;
  * @author carcassi
  */
 class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.ConnectionPayload, Object> {
+
+    private static final Logger log = Logger.getLogger(JDBCChannelHandler.class.getName());
     
     private final JDBCDataSource dataSource;
     private final JDBCDataSourceConfiguration.Channel channelConfiguration;
@@ -108,6 +112,8 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     }
     
     private Object executePollQuery(Connection connection) throws SQLException {
+        log.log(Level.FINER, "Executing PollQuery for {0}", getChannelName());
+        long startTime = System.currentTimeMillis();
         Object firstElement = null;
         try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.pollQuery)) {
             for (int i = 0; i < parameters.size(); i++) {
@@ -124,10 +130,13 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
                 }
             }
         }
+        log.log(Level.FINER, "Executed PollQuery for {0} - {1} ms", new Object[]{getChannelName(), System.currentTimeMillis() - startTime});
         return firstElement;
     }
     
     private VTable executeDataQuery(Connection connection) throws SQLException {
+        log.log(Level.FINER, "Executing DataQuery for {0}", getChannelName());
+        long startTime = System.currentTimeMillis();
         VTable vTable;
         try (PreparedStatement stmt = connection.prepareStatement(channelConfiguration.query)) {
             for (int i = 0; i < parameters.size(); i++) {
@@ -139,6 +148,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
                 vTable = JDBCVTypeUtil.resultSetToVTable(result);
             }
         }
+        log.log(Level.FINER, "Executed DataQuery for {0} - {1} ms", new Object[]{getChannelName(), System.currentTimeMillis() - startTime});
         return vTable;
     }
 }
