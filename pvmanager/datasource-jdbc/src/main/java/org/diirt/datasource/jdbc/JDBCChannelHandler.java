@@ -39,6 +39,10 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
         this.parameters = Collections.unmodifiableList(parameters);
     }
     
+    String getConnectionName() {
+        return channelConfiguration.connectionName;
+    }
+    
     @Override
     public void connect() {
         // Poll right away
@@ -76,7 +80,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
     private static final Object NO_POLL_DATA = new Object();
     private volatile Object pollResult;
     
-    void poll() {
+    void poll(Connection dbConnection) {
         // Skip poll if channel is no usage on the channel
         if (getUsageCounter() > 0) {
             boolean databaseConnected = false;
@@ -84,7 +88,7 @@ class JDBCChannelHandler extends MultiplexedChannelHandler<JDBCChannelHandler.Co
             boolean dataQuerySuccessful = false;
             
             // Retrieve database connection
-            try (Connection dbConnection = dataSource.getConnection(channelConfiguration.connectionName)) {
+            try {
                 
                 databaseConnected = true;
                 

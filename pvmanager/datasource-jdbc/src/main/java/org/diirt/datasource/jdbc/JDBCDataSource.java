@@ -7,6 +7,7 @@ package org.diirt.datasource.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,13 +67,46 @@ public final class JDBCDataSource extends DataSource {
     }
     
     private void poll() {
+        Map<String, Connection> connections = new HashMap<>();
         for (ChannelHandler channel : getChannels().values()) {
-            ((JDBCChannelHandler)channel).poll();
+            if (channel.getUsageCounter() > 0) {
+                try {
+                    JDBCChannelHandler jdbcChannel = (JDBCChannelHandler)channel;
+                    Connection conn = connections.get(jdbcChannel.getConnectionName());
+                    if (conn == null) {
+                        conn = getConnection(jdbcChannel.getConnectionName());
+                        connections.put(jdbcChannel.getConnectionName(), conn);
+                    }
+                    jdbcChannel.poll(conn);
+                } catch (SQLException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        
+        for (Connection conn : connections.values()) {
+            try {
+                conn.close();
+            } catch (RuntimeException | SQLException ex) {
+                log.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private void pollSingle(JDBCChannelHandler channel) {
+        if (channel.getUsageCounter() > 0) {
+            try (Connection conn = getConnection(channel.getConnectionName())) {
+                channel.poll(conn);
+            } catch (SQLException ex) {
+                log.log(Level.SEVERE, null, ex);
+            }
         }
     }
     
     void schedulePoll(JDBCChannelHandler channel) {
-        exec.submit(channel::poll);
+        exec.submit(() -> {
+            pollSingle(channel);
+        });
     }
    
     @Override
@@ -101,7 +135,7 @@ public final class JDBCDataSource extends DataSource {
         }
         return jdbcSource.getConnection();
     }
-
+    
     private javax.sql.DataSource createJdbcSource(String jdbcUrl) {
         return new SimpleDataSource(jdbcUrl);
     }
