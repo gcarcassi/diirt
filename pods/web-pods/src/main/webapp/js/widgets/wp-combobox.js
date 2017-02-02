@@ -136,12 +136,14 @@ function WpCombobox(node) {
     // Initialize the value with the url parameter
     if (selectionUrlParameter) {
         var initValue = getUrlParameter(selectionUrlParameter);
-        option = document.createElement('option');
-        option.value = option.textContent = initValue;
-        option.selected = true;
-        select.appendChild(option);
-        if (selectionChannelName) {
-            selectionChannel.setValue(initValue);
+        if (initValue) {
+            option = document.createElement('option');
+            option.value = option.textContent = initValue;
+            option.selected = true;
+            select.appendChild(option);
+            if (selectionChannelName) {
+                selectionChannel.setValue(initValue);
+            }
         }
     }
 }
