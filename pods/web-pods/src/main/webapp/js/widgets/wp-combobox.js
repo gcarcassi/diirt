@@ -1,15 +1,46 @@
+function setUrlParameter(paramName, paramValue)
+{
+    // Extract page, search and hash from current location
+    var page = location.pathname;
+    if (page.lastIndexOf("/") >=0) {
+        page = page.substring(page.lastIndexOf("/") + 1);
+    }
+    var search = location.search;
+    var hash = location.hash;
+    if (search.indexOf(paramName + "=") >= 0) {
+        var prefix = search.substring(0, search.indexOf(paramName));
+        var suffix = search.substring(search.indexOf(paramName));
+        suffix = suffix.substring(suffix.indexOf("=") + 1);
+        suffix = (suffix.indexOf("&") >= 0) ? suffix.substring(suffix.indexOf("&")) : "";
+        search = prefix + paramName + "=" + paramValue + suffix;
+    } else {
+        if (search.indexOf("?") < 0) {
+            search += "?" + paramName + "=" + paramValue;
+        } else {
+            search += "&" + paramName + "=" + paramValue;
+        }
+    }
+    history.replaceState(null, "", page + search + hash);
+}
+
+function getUrlParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+}
+
 function WpCombobox(node) {
     var self = this;
     var root;
     var id;
     var channelName;
     var selectionChannelName;
+    var selectionUrlParameter;
     var channel;
     var selectionChannel;
     
     var select;
      
     this.setValue = function(value) {
+        selectedValue = select.value;
         var length = select.options.length;
         for (i = 0; i < length; i++) {
           select.options[i] = null;
@@ -27,6 +58,9 @@ function WpCombobox(node) {
                     for (i = 0; i < value.value.length; i++) {
                         option = document.createElement('option');
                         option.value = option.textContent = value.value[i];
+                        if (selectedValue === option.value) {
+                            option.selected = true;
+                        }
                         select.appendChild(option);
                     }
                     select.disabled = false;
@@ -64,6 +98,9 @@ function WpCombobox(node) {
     
     var selectionCallback = function () {
         selectionChannel.setValue(select.value);
+        if (selectionUrlParameter) {
+            setUrlParameter(selectionUrlParameter, select.value);
+        }
     };
     
     // Constructor
@@ -77,6 +114,7 @@ function WpCombobox(node) {
 
     channelName = root.getAttribute("data-channel");
     selectionChannelName = root.getAttribute("data-selection-channel");
+    selectionUrlParameter = root.getAttribute("data-selection-url-parameter");
     
     // Subscribe to the channel
     channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, true);
@@ -89,9 +127,22 @@ function WpCombobox(node) {
     select.style.textAlign = "inherit";
     root.appendChild(select);
 
+    // Setup selection broadcast
     if (selectionChannelName) {
         selectionChannel = WebPodsClient.client.subscribeChannel(selectionChannelName, function() {}, false);
         select.onchange = selectionCallback;
+    }
+    
+    // Initialize the value with the url parameter
+    if (selectionUrlParameter) {
+        var initValue = getUrlParameter(selectionUrlParameter);
+        option = document.createElement('option');
+        option.value = option.textContent = initValue;
+        option.selected = true;
+        select.appendChild(option);
+        if (selectionChannelName) {
+            selectionChannel.setValue(initValue);
+        }
     }
 }
 
