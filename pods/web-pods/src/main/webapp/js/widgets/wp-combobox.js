@@ -1,32 +1,3 @@
-function setUrlParameter(paramName, paramValue)
-{
-    // Extract page, search and hash from current location
-    var page = location.pathname;
-    if (page.lastIndexOf("/") >=0) {
-        page = page.substring(page.lastIndexOf("/") + 1);
-    }
-    var search = location.search;
-    var hash = location.hash;
-    if (search.indexOf(paramName + "=") >= 0) {
-        var prefix = search.substring(0, search.indexOf(paramName));
-        var suffix = search.substring(search.indexOf(paramName));
-        suffix = suffix.substring(suffix.indexOf("=") + 1);
-        suffix = (suffix.indexOf("&") >= 0) ? suffix.substring(suffix.indexOf("&")) : "";
-        search = prefix + paramName + "=" + paramValue + suffix;
-    } else {
-        if (search.indexOf("?") < 0) {
-            search += "?" + paramName + "=" + paramValue;
-        } else {
-            search += "&" + paramName + "=" + paramValue;
-        }
-    }
-    history.replaceState(null, "", page + search + hash);
-}
-
-function getUrlParameter(name) {
-    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
-}
-
 function WpCombobox(node) {
     var self = this;
     var root;
@@ -142,7 +113,11 @@ function WpCombobox(node) {
             option.selected = true;
             select.appendChild(option);
             if (selectionChannelName) {
-                selectionChannel.setValue(initValue);
+                if (selectionChannel.isConnected()) {
+                    selectionChannel.setValue(initValue);
+                } else {
+                    window.setTimeout( function(){selectionChannel.setValue(initValue);}, 500 );
+                }
             }
         }
     }

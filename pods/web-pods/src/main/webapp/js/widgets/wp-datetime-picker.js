@@ -5,6 +5,7 @@ function WpDatetimePicker(node) {
     var datepickerId;
     var channelName;
     var channel;
+    var urlParameter;
     var widgetOpen = false;
     
     this.setValue = function(value) {
@@ -56,11 +57,17 @@ function WpDatetimePicker(node) {
     var changeCallback = function (event) {
         if (!widgetOpen) {
             channel.setValue(event.date.unix());
+            if (urlParameter) {
+                setUrlParameter(urlParameter, event.date.unix());
+            }
         }
     };
     
     var hideCallback = function (event) {
         channel.setValue(event.date.unix());
+        if (urlParameter) {
+            setUrlParameter(urlParameter, event.date.unix());
+        }
         widgetOpen = false;
     };
     
@@ -79,6 +86,7 @@ function WpDatetimePicker(node) {
     WpDatetimePicker.widgets[id] = this;
 
     channelName = root.getAttribute("data-channel");
+    urlParameter = root.getAttribute("data-url-parameter");
     
     // Subscribe to the channel
     channel = WebPodsClient.client.subscribeChannel(channelName, channelCallback, false);
@@ -90,6 +98,18 @@ function WpDatetimePicker(node) {
     $('#' + datepickerId).on("dp.hide", hideCallback);
     $('#' + datepickerId).on("dp.show", showCallback);
     $('#' + datepickerId).on("dp.change", changeCallback);
+    
+    // Initialize the value with the url parameter
+    if (urlParameter) {
+        var initValue = parseInt(getUrlParameter(urlParameter));
+        if (!isNaN(initValue)) {
+            $('#' + datepickerId).data("DateTimePicker").date(moment.unix(initValue));
+            if (channelName) {
+                channel.setValue(initValue);
+            }
+        }
+    }
+    
 }
 
 // Keep a list of widgets
