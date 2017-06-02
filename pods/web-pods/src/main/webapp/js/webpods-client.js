@@ -548,9 +548,12 @@ WebPodsClient.setLocation = function(locationFragment) {
     if (locationFragment) {
         if (locationFragment.startsWith("//")) {
             var uri = document.location.protocol.replace("http", "ws") + locationFragment;
-        } else {
+        } else if (locationFragment.startsWith("/")) {
             var uri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + 
                         locationFragment;
+        } else {
+            url = new URL(locationFragment, document.location.href);
+            var uri = url.href.replace("http", "ws");
         }
     } else {
         var uri = document.location.protocol.replace("http", "ws") + "//" + document.location.host + "/" + 
